@@ -22,14 +22,22 @@ prompt('What operation would you like to perform?\n1) Add 2) Subtract 3) Multipl
 let operation = readline.questionInt();
 
 let output;
-if (operation === 1) { // 1 - represents addition
-  output = number1 + number2;
-} else if (operation === 2) { // 2 - represents subtraction
-  output = number1 - number2;
-} else if (operation === 3) { // 3 - represents multiplication
-  output = number1 * number2;
-} else if (operation === 4) { // 4 - represents division
-  output = number1 / number2;
+switch (operation) {
+  case 1:
+    output = number1 + number2;
+    break;
+  case 2:
+    output = number1 - number2;
+    break;
+  case 3:
+    output = number1 * number2;
+    break;
+  case 4:
+    output = number1 / number2;
+    break;
+  default:
+    console.log("ERROR - operation is not supported!");
+    return;
 }
 
 prompt(`The result is: ${output}`);
