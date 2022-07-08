@@ -10,16 +10,31 @@ function prompt(message) {
   console.log(`=> ${message}`);
 }
 
+function isNumberValid(number) {
+  return Number.isNaN(number);
+}
+
 prompt('Welcome to Calculator!');
 
-prompt("What's the first number?");
-let number1 = readline.questionInt();
+let number1;
+do {
+  prompt("What's the first number?");
+  number1 = readline.questionInt();
+} while (isNumberValid(number1));
 
-prompt("What's the second number?");
-let number2 = readline.questionInt();
+let number2;
+do {
+  prompt("What's the second number?");
+  number2 = readline.questionInt();
+} while (isNumberValid(number2));
 
 prompt('What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide');
 let operation = readline.questionInt();
+
+while (![1, 2, 3, 4].includes(operation)) {
+  prompt('Must be 1, 2, 3 or 4')
+  operation = readline.questionInt();
+}
 
 let output;
 switch (operation) {
