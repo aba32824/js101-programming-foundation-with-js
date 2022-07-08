@@ -6,26 +6,53 @@
 
 const readline = require('readline-sync');
 
-console.log('Welcome to Calculator!');
-
-console.log("What's the first number?");
-let number1 = readline.questionInt();
-
-console.log("What's the second number?");
-let number2 = readline.questionInt();
-
-console.log('What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide');
-let operation = readline.questionInt();
-
-let output;
-if (operation === 1) { // 1 - represents addition
-  output = number1 + number2;
-} else if (operation === 2) { // 2 - represents subtraction
-  output = number1 - number2;
-} else if (operation === 3) { // 3 - represents multiplication
-  output = number1 * number2;
-} else if (operation === 4) { // 4 - represents division
-  output = number1 / number2;
+function prompt(message) {
+  console.log(`=> ${message}`);
 }
 
-console.log(`The result is: ${output}`);
+function isNumberValid(number) {
+  return Number.isNaN(number);
+}
+
+prompt('Welcome to Calculator!');
+
+let number1;
+do {
+  prompt("What's the first number?");
+  number1 = readline.questionInt();
+} while (isNumberValid(number1));
+
+let number2;
+do {
+  prompt("What's the second number?");
+  number2 = readline.questionInt();
+} while (isNumberValid(number2));
+
+prompt('What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide');
+let operation = readline.questionInt();
+
+while (![1, 2, 3, 4].includes(operation)) {
+  prompt('Must be 1, 2, 3 or 4')
+  operation = readline.questionInt();
+}
+
+let output;
+switch (operation) {
+  case 1:
+    output = number1 + number2;
+    break;
+  case 2:
+    output = number1 - number2;
+    break;
+  case 3:
+    output = number1 * number2;
+    break;
+  case 4:
+    output = number1 / number2;
+    break;
+  default:
+    console.log("ERROR - operation is not supported!");
+    return;
+}
+
+prompt(`The result is: ${output}`);
