@@ -1,0 +1,9 @@
+{
+  "firstNumberText": "What's the first number?",
+  "secondNumberText": "What's the second number?",
+  "mathOperationText": "What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide",
+  "mathOperationError": "Operation must be 1, 2, 3 or 4",
+  "continuePromptText": "Do you want to continue?\n  'y' - to continue\n  'n' - to stop",
+  "outputText": "The result is",
+  "exitText": "Exiting..."
+}
