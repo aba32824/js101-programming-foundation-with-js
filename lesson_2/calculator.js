@@ -23,36 +23,45 @@ function getNumber(text) {
   return number;
 }
 
+function getMathOperation() {
+  const validOps = [1, 2, 3, 4];
+  prompt('What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide');
+  let operation = readline.questionInt();
+
+  while (!validOps.includes(operation)) {
+    prompt(`Operation must be ${validOps}`);
+    operation = readline.questionInt();
+  }
+  return operation;
+}
+
+function getOutput(number1, number2, operation) {
+  let output;
+  switch (operation) {
+    case 1:
+      output = number1 + number2;
+      break;
+    case 2:
+      output = number1 - number2;
+      break;
+    case 3:
+      output = number1 * number2;
+      break;
+    case 4:
+      output = number1 / number2;
+      break;
+    default:
+      console.log("ERROR - operation is not supported!");
+      return;
+  }
+  return output;
+}
+
 prompt('Welcome to Calculator!');
 
 let number1 = getNumber("What's the first number?");
 let number2 = getNumber("What's the second number?");
-
-prompt('What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide');
-let operation = readline.questionInt();
-
-while (![1, 2, 3, 4].includes(operation)) {
-  prompt('Must be 1, 2, 3 or 4');
-  operation = readline.questionInt();
-}
-
-let output;
-switch (operation) {
-  case 1:
-    output = number1 + number2;
-    break;
-  case 2:
-    output = number1 - number2;
-    break;
-  case 3:
-    output = number1 * number2;
-    break;
-  case 4:
-    output = number1 / number2;
-    break;
-  default:
-    console.log("ERROR - operation is not supported!");
-    return;
-}
+let operation = getMathOperation();
+let output = getOutput(number1, number2, operation);
 
 prompt(`The result is: ${output}`);
