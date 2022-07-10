@@ -5,6 +5,7 @@
 // Print the result to the terminal.
 
 const readline = require('readline-sync');
+const calcMessages = require('./calculator_messages.json');
 
 function prompt(message) {
   console.log(`=> ${message}`);
@@ -25,11 +26,11 @@ function getNumber(text) {
 
 function getMathOperation() {
   const validOps = [1, 2, 3, 4];
-  prompt('What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide');
+  prompt(calcMessages.mathOperationText);
   let operation = readline.questionInt();
 
   while (!validOps.includes(operation)) {
-    prompt(`Operation must be ${validOps}`);
+    prompt(calcMessages.mathOperationError);
     operation = readline.questionInt();
   }
   return operation;
@@ -59,16 +60,16 @@ function getOutput(number1, number2, operation) {
 prompt('Welcome to Calculator!');
 
 while (true) {
-  let number1 = getNumber("What's the first number?");
-  let number2 = getNumber("What's the second number?");
+  let number1 = getNumber(calcMessages.firstNumberText);
+  let number2 = getNumber(calcMessages.secondNumberText);
   let operation = getMathOperation();
   let output = getOutput(number1, number2, operation);
 
-  prompt(`The result is: ${output}`);
-  prompt("Do you want to continue?\n  'y' - to continue\n  'n' - to stop");
+  prompt(`${calcMessages.outputText}: ${output}`);
+  prompt(calcMessages.continuePromptText);
   let response = readline.question();
   if (response === 'n') {
-    prompt("Exiting ...");
+    prompt(calcMessages.exitText);
     break;
   }
 }
