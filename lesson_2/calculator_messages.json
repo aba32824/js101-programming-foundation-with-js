@@ -1,9 +1,22 @@
 {
-  "firstNumberText": "What's the first number?",
-  "secondNumberText": "What's the second number?",
-  "mathOperationText": "What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide",
-  "mathOperationError": "Operation must be 1, 2, 3 or 4",
-  "continuePromptText": "Do you want to continue?\n  'y' - to continue\n  'n' - to stop",
-  "outputText": "The result is",
-  "exitText": "Exiting..."
+  "eng": {
+    "welcomeText": "Welcome to Calculator!",
+    "firstNumberText": "What's the first number?",
+    "secondNumberText": "What's the second number?",
+    "mathOperationText": "What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide",
+    "mathOperationError": "Operation must be 1, 2, 3 or 4",
+    "continuePromptText": "Do you want to continue?\n  'y' - to continue\n  'n' - to stop",
+    "outputText": "The result is",
+    "exitText": "Exiting..."
+  },
+  "esp": {
+    "welcomeText": "¡Bienvenido a Calculadora!",
+    "firstNumberText": "¿Cuál es el primer número?",
+    "secondNumberText": "¿Cuál es el segundo número?",
+    "mathOperationText": "¿Qué operación le gustaría realizar?\n1) Sumar 2) Restar 3) Multiplicar 4) Dividir",
+    "mathOperationError": "La operación debe ser 1, 2, 3 o 4",
+    "continuePromptText": "¿Desea continuar?\n 'y' - para continuar\n 'n' - para detener",
+    "outputText": "El resultado es",
+    "exitText": "saliendo..."
+  }
 }

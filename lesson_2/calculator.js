@@ -5,7 +5,8 @@
 // Print the result to the terminal.
 
 const readline = require('readline-sync');
-const calcMessages = require('./calculator_messages.json');
+const MESSAGES = require('./calculator_messages.json');
+const DEFAULT_LOCALE = "eng";
 
 function prompt(message) {
   console.log(`=> ${message}`);
@@ -24,13 +25,13 @@ function getNumber(text) {
   return number;
 }
 
-function getMathOperation() {
+function getMathOperation(locale) {
   const validOps = [1, 2, 3, 4];
-  prompt(calcMessages.mathOperationText);
+  prompt(MESSAGES[locale].mathOperationText);
   let operation = readline.questionInt();
 
   while (!validOps.includes(operation)) {
-    prompt(calcMessages.mathOperationError);
+    prompt(MESSAGES[locale].mathOperationError);
     operation = readline.questionInt();
   }
   return operation;
@@ -57,19 +58,28 @@ function getOutput(number1, number2, operation) {
   return output;
 }
 
-prompt('Welcome to Calculator!');
+let locales = Object.keys(MESSAGES);
+prompt(`Supported locales are: ${locales}.\nPlease specify your locale (default is eng)`);
+let locale = readline.question();
+
+if (!MESSAGES.hasOwnProperty(locale)) {
+  prompt(`You provided an invalid locale. Setting it up to default '${DEFAULT_LOCALE}'`);
+  locale = DEFAULT_LOCALE;
+}
+
+prompt(MESSAGES[locale].welcomeText);
 
 while (true) {
-  let number1 = getNumber(calcMessages.firstNumberText);
-  let number2 = getNumber(calcMessages.secondNumberText);
-  let operation = getMathOperation();
+  let number1 = getNumber(MESSAGES[locale].firstNumberText);
+  let number2 = getNumber(MESSAGES[locale].secondNumberText);
+  let operation = getMathOperation(locale);
   let output = getOutput(number1, number2, operation);
 
-  prompt(`${calcMessages.outputText}: ${output}`);
-  prompt(calcMessages.continuePromptText);
+  prompt(`${MESSAGES[locale].outputText}: ${output}`);
+  prompt(MESSAGES[locale].continuePromptText);
   let response = readline.question();
   if (response === 'n') {
-    prompt(calcMessages.exitText);
+    prompt(MESSAGES[locale].exitText);
     break;
   }
 }
