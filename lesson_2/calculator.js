@@ -57,8 +57,8 @@ function getOutput(number1, number2, operation) {
 }
 
 prompt('Welcome to Calculator!');
-let repeat = true;
-do {
+
+while (true) {
   let number1 = getNumber("What's the first number?");
   let number2 = getNumber("What's the second number?");
   let operation = getMathOperation();
@@ -68,7 +68,7 @@ do {
   prompt("Do you want to continue?\n  'y' - to continue\n  'n' - to stop");
   let response = readline.question();
   if (response === 'n') {
-    repeat = false;
     prompt("Exiting ...");
+    break;
   }
-} while (repeat);
+}
