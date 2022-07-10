@@ -14,19 +14,19 @@ function isNumberValid(number) {
   return Number.isNaN(number);
 }
 
+function getNumber(text) {
+  let number;
+  do {
+    prompt(text);
+    number = readline.questionInt();
+  } while (isNumberValid(number));
+  return number;
+}
+
 prompt('Welcome to Calculator!');
 
-let number1;
-do {
-  prompt("What's the first number?");
-  number1 = readline.questionInt();
-} while (isNumberValid(number1));
-
-let number2;
-do {
-  prompt("What's the second number?");
-  number2 = readline.questionInt();
-} while (isNumberValid(number2));
+let number1 = getNumber("What's the first number?");
+let number2 = getNumber("What's the second number?");
 
 prompt('What operation would you like to perform?\n1) Add 2) Subtract 3) Multiply 4) Divide');
 let operation = readline.questionInt();
