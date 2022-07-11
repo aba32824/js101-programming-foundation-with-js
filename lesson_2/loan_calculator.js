@@ -33,9 +33,19 @@ function getNumber(text) {
 }
 
 function calculateMontlyPayment(loanAmount, annualInterestRate, months) {
-  let rate = (annualInterestRate / 100) / 12.00;
-  const result = (loanAmount * (rate / (1 - Math.pow((1 + rate), (-months)))));
+  let result;
+  if (annualInterestRate > 0) {
+    let rate = (annualInterestRate / 100) / 12.00;
+    result = (loanAmount * (rate / (1 - Math.pow((1 + rate), (-months)))));
+  } else {
+    result = loanAmount / months;
+  }
   return result.toFixed(2);
+}
+
+function calculateTotalPayment(loanAmount, payment, months) {
+  let totalPayment = payment * months;
+  return (totalPayment < loanAmount) ? loanAmount : totalPayment;
 }
 
 while (true) {
@@ -44,7 +54,7 @@ while (true) {
   let loanDuration = getNumber('Entery the loan duration in months (integer number)');
   const payment = calculateMontlyPayment(loanAmount, annualRate, loanDuration);
   prompt(`Your monthly payment is $${payment}`);
-  const totalPayment = loanDuration * payment;
+  const totalPayment = calculateTotalPayment(loanAmount, payment, loanDuration);
   prompt(`Your total payment is   $${totalPayment}`);
   // stop doing calculation if the user wants to exit
   prompt('Do you want to exit? Press "y" or "Y" to stop');
