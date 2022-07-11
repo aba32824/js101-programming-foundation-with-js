@@ -17,7 +17,9 @@ function prompt(text) {
 }
 
 function isNumberValid(number) {
-  return !Number.isNaN(Number(number));
+  return number.trim() !== '' &&
+    !Number.isNaN(Number(number)) &&
+    Number(number) > 0;
 }
 
 function getNumber(text) {
@@ -27,6 +29,8 @@ function getNumber(text) {
     number = readline.question();
     if (isNumberValid(number)) {
       break;
+    } else {
+      prompt('Number must be a positive integer!');
     }
   }
   return Number(number);
@@ -38,6 +42,7 @@ function calculateMontlyPayment(loanAmount, annualInterestRate, months) {
     let rate = (annualInterestRate / 100) / 12.00;
     result = (loanAmount * (rate / (1 - Math.pow((1 + rate), (-months)))));
   } else {
+    prompt('Your loan has no interest.');
     result = loanAmount / months;
   }
   return result.toFixed(2);
