@@ -54,9 +54,9 @@ function calculateTotalPayment(loanAmount, payment, months) {
 }
 
 while (true) {
-  let loanAmount = getNumber('Enter the loan amount (integer number)');
-  let annualRate = getNumber('Enter Annual Percentage Rate (integer number)');
-  let loanDuration = getNumber('Entery the loan duration in months (integer number)');
+  let loanAmount = getNumber('Input the loan amount (e.g., 10000 for 10K)');
+  let annualRate = getNumber('Input Annual Percent., Rate (e.g., 2.5 for 2.5%)');
+  let loanDuration = getNumber('Input the loan duration in months (e.g., 36)');
   const payment = calculateMontlyPayment(loanAmount, annualRate, loanDuration);
   prompt(`Your monthly payment is $${payment}`);
   const totalPayment = calculateTotalPayment(loanAmount, payment, loanDuration);
