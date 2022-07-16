@@ -2,9 +2,9 @@
  * Rock, Paper and Scissors (+ Lizard and Spock) game implementation.
  *
  * The simple RPS game rules:
- *   - If player A chooses rock and player B chooses scissors, player a wins.
- *   - If player A chooses paper and player B chooses rock, player a wins.
- *   - If player A chooses scissors and player B chooses paper, player a wins.
+ *   - If player A chooses rock and player B chooses scissors, player A wins.
+ *   - If player A chooses paper and player B chooses rock, player A wins.
+ *   - If player A chooses scissors and player B chooses paper, player A wins.
  *   - If both players choose the same item, neither player wins. It's a tie.
  *
  * The exteneded RPS+LS game rules:
@@ -39,7 +39,7 @@ function getWinner(player1, player2) {
   // default case - both players got the same item, so it returns null
   if (player1.item === player2.item) return null;
   // other scenarios
-  if (player1.item in WINNING_MAP && player2.item in WINNING_MAP[player1.item]) {
+  if (WINNING_MAP[player1.item][0] === player2.item) {
     return player1.name;
   } else {
     return player2.name;
