@@ -39,10 +39,7 @@ function getRandomItem() {
 }
 
 function hasWinningRule(item1, item2) {
-  for (let mapItem of WINNING_MAP[item1]) {
-    if (mapItem === item2) return true;
-  }
-  return false;
+  return WINNING_MAP[item1].includes(item2);
 }
 
 function getWinner(player1, player2) {
@@ -69,7 +66,7 @@ function getCountOfItems(charSet, lastIndex) {
   return itemCount;
 }
 
-function getItemByFirstChar(chars) {
+function getItemByChars(chars) {
   for (let item of VALID_CHOICES) {
     if (item.startsWith(chars)) return item;
   }
@@ -81,12 +78,32 @@ function getUserItemByCharCount(charCount) {
   let itemCount = getCountOfItems(chars, charCount);
 
   if (itemCount == 1) {
-    return getItemByFirstChar(chars);
+    return getItemByChars(chars);
   } else if (itemCount > 1) {
     return null;
   } else {
     return undefined;
   }
+}
+
+function getUserItem() {
+  let charCount = 1;
+  let item;
+  prompt('Specify the first character to indicate your choice.');
+
+  while (true) {
+    item = getUserItemByCharCount(charCount);
+    if (item) {
+      break;
+    } else if (item === null) {
+      prompt("There are multiple items that start from this character.");
+      prompt("Please add the first char along with the following char.");
+      charCount++;
+    } else {
+      prompt("That's not a valid choice. Please repeat.");
+    }
+  }
+  return item;
 }
 
 // Main loop
@@ -102,21 +119,7 @@ while (true) {
   };
 
   prompt(`Choose one from: ${VALID_CHOICES.join(', ')}`);
-  prompt('Specify the first character to indicate your choice.');
-
-  let charCount = 1;
-  while (true) {
-    let item = getUserItemByCharCount(charCount);
-    if (item) {
-      yourPlayer.item = item;
-      break;
-    } else if (item === null) {
-      prompt("There are multiple items that start from this character.");
-      charCount++;
-    } else {
-      prompt("That's not a valid choice. Please repeat");
-    }
-  }
+  yourPlayer.item = getUserItem();
 
   prompt(`Your chose "${yourPlayer.item}", computer chose "${computerPlayer.item}"`);
   let winner = getWinner(yourPlayer, computerPlayer);
