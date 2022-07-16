@@ -6,13 +6,27 @@
 const readline = require('readline-sync');
 const VALID_CHOICES = ['rock', 'paper', 'scissors'];
 
-function prompt(text) {
-  console.log(`=> ${text}`);
-}
-
 function getRandomItem() {
   let index = Math.floor(Math.random() * VALID_CHOICES.length);
   return VALID_CHOICES[index];
+}
+
+function detectWhoWins(choice, computerChoice) {
+   if ((choice === 'rock' && computerChoice === 'scissors') ||
+       (choice === 'paper' && computerChoice === 'rock') ||
+       (choice === 'scissors' && computerChoice === 'paper')) {
+     prompt('You win!');
+   } else if ((choice === 'rock' && computerChoice === 'paper') ||
+              (choice === 'paper' && computerChoice === 'scissors') ||
+              (choice === 'scissors' && computerChoice === 'rock')) {
+     prompt('Computer wins!')
+   } else {
+     prompt("It's a tie!");
+   }
+}
+
+function prompt(text) {
+  console.log(`=> ${text}`);
 }
 
 while (true) {
@@ -27,7 +41,7 @@ while (true) {
   let computerChoice = getRandomItem();
 
   prompt(`Your chose ${choice}, computer chose ${computerChoice}`);
-  // Do something to detect a winner
+  detectWhoWins(choice, computerChoice);
   prompt('Do you want to play again (y/n)?');
   let answer = readline.question().toLowerCase();
   while (answer !== 'y' && answer !== 'n') {
