@@ -23,6 +23,7 @@
  */
 
 const readline = require('readline-sync');
+
 const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
 // NOTE: Keys are items that win others that sit in the linked array
 const WINNING_MAP = {
@@ -33,15 +34,23 @@ const WINNING_MAP = {
   spock: ['scissors', 'rock']
 };
 
+// Gets random item for the computer player.
 function getRandomItem() {
   let index = Math.floor(Math.random() * VALID_CHOICES.length);
   return VALID_CHOICES[index];
 }
 
+// Sees if there is a winning rule for a combination of items.
 function hasWinningRule(item1, item2) {
   return WINNING_MAP[item1].includes(item2);
 }
 
+// Get the winner of the game.
+// It returns:
+// - 'you'
+// - 'computer'
+// - null if both, you and computer, specified the same item
+//
 function getWinner(player1, player2) {
   // default case - both players got the same item, so it returns null
   if (player1.item === player2.item) return null;
@@ -57,6 +66,7 @@ function prompt(text) {
   console.log(`=> ${text}`);
 }
 
+// Gets the number of items that start from a particular char.
 function getCountOfItems(charSet, lastIndex) {
   let itemCount = 0;
   for (let item of VALID_CHOICES) {
@@ -66,6 +76,8 @@ function getCountOfItems(charSet, lastIndex) {
   return itemCount;
 }
 
+// Returns an item that begins from a particular char (or chars).
+// Otherwise it returns undefined if nothing found.
 function getItemByChars(chars) {
   for (let item of VALID_CHOICES) {
     if (item.startsWith(chars)) return item;
@@ -73,11 +85,16 @@ function getItemByChars(chars) {
   return undefined;
 }
 
+// Reads the user input (shortened) and tries to guess the item.
+// It return:
+// - item, if it found
+// - null, if there are more items that start from a particular char (or chars)
+// - undefined, if the user input was wrong
 function getUserItemByCharCount(charCount) {
-  let chars = readline.question('> ');
+  let chars = readline.question('> ').toLowerCase();
   let itemCount = getCountOfItems(chars, charCount);
 
-  if (itemCount == 1) {
+  if (itemCount === 1) {
     return getItemByChars(chars);
   } else if (itemCount > 1) {
     return null;
@@ -86,6 +103,8 @@ function getUserItemByCharCount(charCount) {
   }
 }
 
+// Keeps looping until the user input can be recognisable
+// and then returns an item.
 function getUserItem() {
   let charCount = 1;
   let item;
