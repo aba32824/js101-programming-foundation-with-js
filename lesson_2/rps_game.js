@@ -24,6 +24,7 @@
 
 const readline = require('readline-sync');
 const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
+// NOTE: Keys are items that win others that sit in the linked array
 const WINNING_MAP = {
   rock: ['scissors', 'lizard'],
   paper: ['rock', 'spock'],
@@ -59,22 +60,62 @@ function prompt(text) {
   console.log(`=> ${text}`);
 }
 
+function getCountOfItems(charSet, lastIndex) {
+  let itemCount = 0;
+  for (let item of VALID_CHOICES) {
+    let itemChar = item.slice(0, lastIndex);
+    if (itemChar === charSet) itemCount++;
+  }
+  return itemCount;
+}
+
+function getItemByFirstChar(chars) {
+  for (let item of VALID_CHOICES) {
+    if (item.startsWith(chars)) return item;
+  }
+  return undefined;
+}
+
+function getUserItemByCharCount(charCount) {
+  let chars = readline.question('> ');
+  let itemCount = getCountOfItems(chars, charCount);
+
+  if (itemCount == 1) {
+    return getItemByFirstChar(chars);
+  } else if (itemCount > 1) {
+    return null;
+  } else {
+    return undefined;
+  }
+}
+
+// Main loop
+
 while (true) {
   let yourPlayer = {
     name: "you",
-    item: undefined
+    item: null
   };
   let computerPlayer = {
     name: "computer",
     item: getRandomItem()
   };
 
-  prompt(`Choose one: ${VALID_CHOICES.join(', ')}`);
-  yourPlayer.item = readline.question('> ');
+  prompt(`Choose one from: ${VALID_CHOICES.join(', ')}`);
+  prompt('Specify the first character to indicate your choice.');
 
-  while (!VALID_CHOICES.includes(yourPlayer.item)) {
-    prompt("That's not a valid choice. Please repeat");
-    yourPlayer.item = readline.question('> ');
+  let charCount = 1;
+  while (true) {
+    let item = getUserItemByCharCount(charCount);
+    if (item) {
+      yourPlayer.item = item;
+      break;
+    } else if (item === null) {
+      prompt("There are multiple items that start from this character.");
+      charCount++;
+    } else {
+      prompt("That's not a valid choice. Please repeat");
+    }
   }
 
   prompt(`Your chose "${yourPlayer.item}", computer chose "${computerPlayer.item}"`);
