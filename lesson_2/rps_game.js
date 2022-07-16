@@ -8,26 +8,28 @@
  *   - If both players choose the same item, neither player wins. It's a tie.
  *
  * The exteneded RPS+LS game rules:
- *  - Scissors cuts paper
- *  - Paper covers rock
- *  - Rock crushes lizard
+ *  - Scissors cuts Paper
+ *  - Paper covers Rock
+ *  - Rock crushes Lizard
  *  - Lizard poisons Spock
- *  - Spock smashes scissors
- *  - Scissors decapitates lizard
- *  - Lizard eats paper
+ *  - Spock smashes Scissors
+ *  - Scissors decapitates Lizard
+ *  - Lizard eats Paper
  *  - Paper disproves Spock
- *  - Spock vaporizes rock
- *  - and as it always has, Rock crushes scissors.
+ *  - Spock vaporizes Rock
+ *  - and as it always has, Rock crushes Scissors.
  *
  *  See more details: https://the-big-bang-theory.com/rock-paper-scissors-lizard-spock/
  */
 
 const readline = require('readline-sync');
-const VALID_CHOICES = ['rock', 'paper', 'scissors'];
+const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
 const WINNING_MAP = {
-  rock: ['scissors'],
-  paper: ['rock'],
-  scissors: ['paper']
+  rock: ['scissors', 'lizard'],
+  paper: ['rock', 'spock'],
+  scissors: ['paper', 'lizard'],
+  lizard: ['spock', 'paper'],
+  spock: ['scissors', 'rock']
 };
 
 function getRandomItem() {
@@ -35,11 +37,18 @@ function getRandomItem() {
   return VALID_CHOICES[index];
 }
 
+function hasWinningRule(item1, item2) {
+  for (let mapItem of WINNING_MAP[item1]) {
+    if (mapItem === item2) return true;
+  }
+  return false;
+}
+
 function getWinner(player1, player2) {
   // default case - both players got the same item, so it returns null
   if (player1.item === player2.item) return null;
   // other scenarios
-  if (WINNING_MAP[player1.item][0] === player2.item) {
+  if (hasWinningRule(player1.item, player2.item)) {
     return player1.name;
   } else {
     return player2.name;
