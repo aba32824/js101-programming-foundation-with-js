@@ -33,6 +33,7 @@ const WINNING_MAP = {
   lizard: ['spock', 'paper'],
   spock: ['scissors', 'rock']
 };
+const MAX_SCORE = 3;
 // settings for players
 let yourPlayer = {
   name: "you",
@@ -56,13 +57,13 @@ function hasWinningRule(item1, item2) {
   return WINNING_MAP[item1].includes(item2);
 }
 
-// Get the winner of the game.
+// Get the winner's name.
 // It returns:
 // - 'you'
 // - 'computer'
 // - null if both, you and computer, specified the same item
 //
-function getWinner(player1, player2) {
+function getWinnerName(player1, player2) {
   // default case - both players got the same item, so it returns null
   if (player1.item === player2.item) return null;
   // other scenarios
@@ -138,12 +139,40 @@ function getUserItem() {
   return item;
 }
 
-function displayWinner(winner) {
+function displayWinnerName(winner) {
   if (winner) {
     prompt(`The winner - ${winner}!`);
   } else {
     prompt("It's a tie!");
   }
+}
+
+function showGrandWinnerIfAny(player1, player2) {
+  let name;
+  let scores;
+  if (player1.scores >= MAX_SCORE) {
+    name = player1.name;
+    scores = player1.scores;
+  } else if (player2.scores >= MAX_SCORE) {
+    name = player2.name;
+    scores = player2.scores;
+  }
+
+  if (name && scores) {
+    prompt(`"${name}" is the grand winner by getting ${scores} scores!`);
+  }
+}
+
+function doesUserWantExit() {
+  prompt('Do you want to play again (y/n)?');
+  let answer = readline.question('> ').toLowerCase();
+
+  while (answer !== 'y' && answer !== 'n') {
+    prompt('Please input either "y" or "n"');
+    answer = readline.question('> ').toLowerCase();
+  }
+
+  return answer === 'n';
 }
 
 // Main loop
@@ -154,16 +183,17 @@ while (true) {
   yourPlayer.item = getUserItem();
 
   prompt(`Your chose "${yourPlayer.item}", computer chose "${computerPlayer.item}"`);
-  let winnerName = getWinner(yourPlayer, computerPlayer);
-  displayWinner(winnerName);
+  let winnerName = getWinnerName(yourPlayer, computerPlayer);
+  displayWinnerName(winnerName);
 
-  prompt('Do you want to play again (y/n)?');
-  let answer = readline.question('> ').toLowerCase();
+  // show a winner that got the max score
+  showGrandWinnerIfAny(computerPlayer, yourPlayer);
 
-  while (answer !== 'y' && answer !== 'n') {
-    prompt('Please input either "y" or "n"');
-    answer = readline.question('> ').toLowerCase();
+  // reseting scores if either you or computer got the max score
+  if (yourPlayer.scores === MAX_SCORE || computerPlayer.scores === MAX_SCORE) {
+    yourPlayer.scores = 0;
+    computerPlayer.scores = 0;
   }
 
-  if (answer === 'n') break;
+  if (doesUserWantExit()) break;
 }
