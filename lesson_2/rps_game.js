@@ -33,6 +33,17 @@ const WINNING_MAP = {
   lizard: ['spock', 'paper'],
   spock: ['scissors', 'rock']
 };
+// settings for players
+let yourPlayer = {
+  name: "you",
+  item: null,
+  scores: 0
+};
+let computerPlayer = {
+  name: "computer",
+  item: null,
+  scores: 0
+};
 
 // Gets random item for the computer player.
 function getRandomItem() {
@@ -56,8 +67,10 @@ function getWinner(player1, player2) {
   if (player1.item === player2.item) return null;
   // other scenarios
   if (hasWinningRule(player1.item, player2.item)) {
+    player1.scores += 1;
     return player1.name;
   } else {
+    player2.scores += 1;
     return player2.name;
   }
 }
@@ -125,32 +138,28 @@ function getUserItem() {
   return item;
 }
 
-// Main loop
-
-while (true) {
-  let yourPlayer = {
-    name: "you",
-    item: null
-  };
-  let computerPlayer = {
-    name: "computer",
-    item: getRandomItem()
-  };
-
-  prompt(`Choose one from: ${VALID_CHOICES.join(', ')}`);
-  yourPlayer.item = getUserItem();
-
-  prompt(`Your chose "${yourPlayer.item}", computer chose "${computerPlayer.item}"`);
-  let winner = getWinner(yourPlayer, computerPlayer);
-
+function displayWinner(winner) {
   if (winner) {
     prompt(`The winner - ${winner}!`);
   } else {
     prompt("It's a tie!");
   }
+}
+
+// Main loop
+while (true) {
+  prompt(`Choose one from: ${VALID_CHOICES.join(', ')}`);
+
+  computerPlayer.item = getRandomItem();
+  yourPlayer.item = getUserItem();
+
+  prompt(`Your chose "${yourPlayer.item}", computer chose "${computerPlayer.item}"`);
+  let winnerName = getWinner(yourPlayer, computerPlayer);
+  displayWinner(winnerName);
 
   prompt('Do you want to play again (y/n)?');
   let answer = readline.question('> ').toLowerCase();
+
   while (answer !== 'y' && answer !== 'n') {
     prompt('Please input either "y" or "n"');
     answer = readline.question('> ').toLowerCase();
