@@ -35,7 +35,7 @@ const WINNING_MAP = {
 };
 const MAX_SCORE = 3;
 // settings for players
-let yourPlayer = {
+let userPlayer = {
   name: "you",
   item: null,
   scores: 0
@@ -63,17 +63,19 @@ function hasWinningRule(item1, item2) {
 // - 'computer'
 // - null if both, you and computer, specified the same item
 //
-function getWinnerName(player1, player2) {
+function getWinnerName(user, computer) {
   // default case - both players got the same item, so it returns null
-  if (player1.item === player2.item) return null;
+  if (user.item === computer.item) return null;
   // other scenarios
-  if (hasWinningRule(player1.item, player2.item)) {
-    player1.scores += 1;
-    return player1.name;
+  let winnerName;
+  if (hasWinningRule(user.item, computer.item)) {
+    user.scores += 1;
+    winnerName = user.name;
   } else {
-    player2.scores += 1;
-    return player2.name;
+    computer.scores += 1;
+    winnerName = computer.name;
   }
+  return winnerName;
 }
 
 function prompt(text) {
@@ -139,23 +141,23 @@ function getUserItem() {
   return item;
 }
 
-function displayWinnerName(winner) {
-  if (winner) {
-    prompt(`The winner - ${winner}!`);
+function displayWinnerName(name) {
+  if (name) {
+    prompt(`The winner - ${name}!`);
   } else {
     prompt("It's a tie!");
   }
 }
 
-function showGrandWinnerIfAny(player1, player2) {
+function showGrandWinnerIfAny(user, computer) {
   let name;
   let scores;
-  if (player1.scores >= MAX_SCORE) {
-    name = player1.name;
-    scores = player1.scores;
-  } else if (player2.scores >= MAX_SCORE) {
-    name = player2.name;
-    scores = player2.scores;
+  if (user.scores >= MAX_SCORE) {
+    name = user.name;
+    scores = user.scores;
+  } else if (computer.scores >= MAX_SCORE) {
+    name = computer.name;
+    scores = computer.scores;
   }
 
   if (name && scores) {
@@ -180,18 +182,18 @@ while (true) {
   prompt(`Choose one from: ${VALID_CHOICES.join(', ')}`);
 
   computerPlayer.item = getRandomItem();
-  yourPlayer.item = getUserItem();
+  userPlayer.item = getUserItem();
 
-  prompt(`Your chose "${yourPlayer.item}", computer chose "${computerPlayer.item}"`);
-  let winnerName = getWinnerName(yourPlayer, computerPlayer);
+  prompt(`Your chose "${userPlayer.item}", computer chose "${computerPlayer.item}"`);
+  let winnerName = getWinnerName(userPlayer, computerPlayer);
   displayWinnerName(winnerName);
 
   // show a winner that got the max score
-  showGrandWinnerIfAny(computerPlayer, yourPlayer);
+  showGrandWinnerIfAny(computerPlayer, userPlayer);
 
   // reseting scores if either you or computer got the max score
-  if (yourPlayer.scores === MAX_SCORE || computerPlayer.scores === MAX_SCORE) {
-    yourPlayer.scores = 0;
+  if (userPlayer.scores === MAX_SCORE || computerPlayer.scores === MAX_SCORE) {
+    userPlayer.scores = 0;
     computerPlayer.scores = 0;
   }
 
