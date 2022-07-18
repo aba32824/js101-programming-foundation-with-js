@@ -187,11 +187,8 @@ while (true) {
   prompt(`Your chose "${userPlayer.item}", computer chose "${computerPlayer.item}"`);
   let winnerName = getWinnerName(userPlayer, computerPlayer);
   displayWinnerName(winnerName);
-
-  // show a winner that got the max score
   showGrandWinnerIfAny(computerPlayer, userPlayer);
 
-  // reseting scores if either you or computer got the max score
   if (userPlayer.scores === MAX_SCORE || computerPlayer.scores === MAX_SCORE) {
     userPlayer.scores = 0;
     computerPlayer.scores = 0;
