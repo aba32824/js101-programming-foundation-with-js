@@ -116,7 +116,7 @@ function displayWinnerName(name) {
   }
 }
 
-function showGrandWinnerIfAny(user, computer) {
+function getGrandWinnerIfAny(user, computer) {
   let name;
   let scores;
   if (user.scores >= MAX_SCORE) {
@@ -127,9 +127,7 @@ function showGrandWinnerIfAny(user, computer) {
     scores = computer.scores;
   }
 
-  if (name && scores) {
-    prompt(`*** "${name}" is the grand winner by getting ${scores} scores ***`);
-  }
+  return `*** "${name}" is the grand winner by getting ${scores} scores ***`;
 }
 
 function doesUserWantExit() {
@@ -144,6 +142,22 @@ function doesUserWantExit() {
   return answer === 'n';
 }
 
+function showGameRules() {
+  console.log('>>> Rock, Paper and Scissors (Lizard&Spock) game rules <<<');
+  console.log('|   Scissors cuts Paper');
+  console.log('|   Paper covers Rock');
+  console.log('|   Rock crushes Lizard');
+  console.log('|   Lizard poisons Spock');
+  console.log('|   Spock smashes Scissors');
+  console.log('|   Scissors decapitates Lizard');
+  console.log('|   Lizard eats Paper');
+  console.log('|   Paper disproves Spock');
+  console.log('|   Spock vaporizes Rock');
+  console.log('|   and as it always has, Rock crushes Scissors');
+  console.log('>>> ************************************************** <<<');
+}
+
+showGameRules();
 // Main loop
 while (true) {
   prompt(`Choose one from: ${Object.keys(VALID_CHOICES).join(', ')}`);
@@ -157,12 +171,13 @@ while (true) {
   prompt(`Your chose "${userPlayer.item}", computer chose "${computerPlayer.item}"`);
   let winnerName = getWinnerName(userPlayer, computerPlayer);
   displayWinnerName(winnerName);
-  showGrandWinnerIfAny(computerPlayer, userPlayer);
 
   if (userPlayer.scores === MAX_SCORE || computerPlayer.scores === MAX_SCORE) {
+    let grandWinner = getGrandWinnerIfAny(computerPlayer, userPlayer);
     userPlayer.scores = 0;
     computerPlayer.scores = 0;
-    //console.clear();
+    console.clear();
+    prompt(grandWinner);
   }
 
   if (doesUserWantExit()) break;
