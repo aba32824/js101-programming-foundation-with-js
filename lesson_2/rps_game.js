@@ -136,29 +136,32 @@ function doesUserWantExit() {
   return answer === 'n';
 }
 
+function playSingleRound() {
+  prompt(`Choose one from: ${Object.keys(VALID_CHOICES).join(', ')}`);
+  for (let item in VALID_CHOICES) {
+    prompt(` use a shortcut (${VALID_CHOICES[item]}) to specify "${item}"`);
+  }
+}
+
 function showGameRules() {
   console.log('>>> Rock, Paper and Scissors (Lizard&Spock) game rules <<<');
-  console.log('|   Scissors cuts Paper');
-  console.log('|   Paper covers Rock');
-  console.log('|   Rock crushes Lizard');
-  console.log('|   Lizard poisons Spock');
-  console.log('|   Spock smashes Scissors');
-  console.log('|   Scissors decapitates Lizard');
-  console.log('|   Lizard eats Paper');
-  console.log('|   Paper disproves Spock');
-  console.log('|   Spock vaporizes Rock');
-  console.log('|   and as it always has, Rock crushes Scissors');
+  console.log('|   Scissors cuts Paper                                  |');
+  console.log('|   Paper covers Rock                                    |');
+  console.log('|   Rock crushes Lizard                                  |');
+  console.log('|   Lizard poisons Spock                                 |');
+  console.log('|   Spock smashes Scissors                               |');
+  console.log('|   Scissors decapitates Lizard                          |');
+  console.log('|   Lizard eats Paper                                    |');
+  console.log('|   Paper disproves Spock                                |');
+  console.log('|   Spock vaporizes Rock                                 |');
+  console.log('|   and as it always has, Rock crushes Scissors          |');
   console.log('>>> ************************************************** <<<');
 }
 
 showGameRules();
 // Main loop
 while (true) {
-  prompt(`Choose one from: ${Object.keys(VALID_CHOICES).join(', ')}`);
-  for (let item in VALID_CHOICES) {
-    prompt(` use a shortcut (${VALID_CHOICES[item]}) to specify "${item}"`);
-  }
-
+  playSingleRound();
   computerPlayer.item = getRandomItem();
   userPlayer.item = getUserItem();
 
