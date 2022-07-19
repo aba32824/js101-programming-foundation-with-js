@@ -94,7 +94,7 @@ function prompt(text) {
 // and then returns an item.
 function getUserItem() {
   let item;
-  prompt('Specify a shortcut to specify your choice.');
+  prompt('Input a shortcut to specify your choice.');
 
   do {
     let shortcut = readline.question('> ').toLowerCase();
@@ -117,15 +117,9 @@ function displayWinnerName(name) {
 }
 
 function getGrandWinnerIfAny(user, computer) {
-  let name;
-  let scores;
-  if (user.scores >= MAX_SCORE) {
-    name = user.name;
-    scores = user.scores;
-  } else if (computer.scores >= MAX_SCORE) {
-    name = computer.name;
-    scores = computer.scores;
-  }
+  let [name, scores] = (user.scores >= MAX_SCORE)
+    ? [user.name, user.scores]
+    : [computer.name, computer.scores];
 
   return `*** "${name}" is the grand winner by getting ${scores} scores ***`;
 }
