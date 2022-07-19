@@ -23,8 +23,15 @@
  */
 
 const readline = require('readline-sync');
-
-const VALID_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
+// NOTE: keys are items for the game and
+//       values are shortcuts to specify a corresponding item
+const VALID_CHOICES = {
+  rock: 'r',
+  paper: 'p',
+  scissors: 'sc',
+  lizard: 'l',
+  spock: 'sp'
+};
 // NOTE: Keys are items that win others that sit in the linked array
 const WINNING_MAP = {
   rock: ['scissors', 'lizard'],
@@ -48,8 +55,9 @@ let computerPlayer = {
 
 // Gets random item for the computer player.
 function getRandomItem() {
-  let index = Math.floor(Math.random() * VALID_CHOICES.length);
-  return VALID_CHOICES[index];
+  let keys = Object.keys(VALID_CHOICES);
+  let index = Math.floor(Math.random() * keys.length);
+  return keys[index];
 }
 
 // Sees if there is a winning rule for a combination of items.
@@ -82,62 +90,21 @@ function prompt(text) {
   console.log(`=> ${text}`);
 }
 
-// Gets the number of items that start from a particular char.
-function getCountOfItems(charSet, lastIndex) {
-  let itemCount = 0;
-  for (let item of VALID_CHOICES) {
-    let itemChar = item.slice(0, lastIndex);
-    if (itemChar === charSet) itemCount++;
-  }
-  return itemCount;
-}
-
-// Returns an item that begins from a particular char (or chars).
-// Otherwise it returns undefined if nothing found.
-function getItemByChars(chars) {
-  for (let item of VALID_CHOICES) {
-    if (item.startsWith(chars)) return item;
-  }
-  return undefined;
-}
-
-// Reads the user input (shortened) and tries to guess the item.
-// It return:
-// - item, if it found
-// - null, if there are more items that start from a particular char (or chars)
-// - undefined, if the user input was wrong
-function getUserItemByCharCount(charCount) {
-  let chars = readline.question('> ').toLowerCase();
-  let itemCount = getCountOfItems(chars, charCount);
-
-  if (itemCount === 1) {
-    return getItemByChars(chars);
-  } else if (itemCount > 1) {
-    return null;
-  } else {
-    return undefined;
-  }
-}
-
 // Keeps looping until the user input can be recognisable
 // and then returns an item.
 function getUserItem() {
-  let charCount = 1;
   let item;
-  prompt('Specify the first character to indicate your choice.');
+  prompt('Specify a shortcut to specify your choice.');
 
-  while (true) {
-    item = getUserItemByCharCount(charCount);
-    if (item) {
-      break;
-    } else if (item === null) {
-      prompt("There are multiple items that start from this character.");
-      prompt("Please add the first char along with the following char.");
-      charCount++;
-    } else {
-      prompt("That's not a valid choice. Please repeat.");
+  do {
+    let shortcut = readline.question('> ').toLowerCase();
+
+    for (let [key, value] of Object.entries(VALID_CHOICES)) {
+      if (shortcut === value) item = key;
     }
-  }
+    if (!item) prompt("That's not a valid choice. Please repeat.");
+  } while (!item);
+
   return item;
 }
 
@@ -161,7 +128,7 @@ function showGrandWinnerIfAny(user, computer) {
   }
 
   if (name && scores) {
-    prompt(`"${name}" is the grand winner by getting ${scores} scores!`);
+    prompt(`*** "${name}" is the grand winner by getting ${scores} scores ***`);
   }
 }
 
@@ -179,7 +146,10 @@ function doesUserWantExit() {
 
 // Main loop
 while (true) {
-  prompt(`Choose one from: ${VALID_CHOICES.join(', ')}`);
+  prompt(`Choose one from: ${Object.keys(VALID_CHOICES).join(', ')}`);
+  for (let item in VALID_CHOICES) {
+    prompt(` use a shortcut (${VALID_CHOICES[item]}) to specify "${item}"`);
+  }
 
   computerPlayer.item = getRandomItem();
   userPlayer.item = getUserItem();
@@ -192,6 +162,7 @@ while (true) {
   if (userPlayer.scores === MAX_SCORE || computerPlayer.scores === MAX_SCORE) {
     userPlayer.scores = 0;
     computerPlayer.scores = 0;
+    //console.clear();
   }
 
   if (doesUserWantExit()) break;
