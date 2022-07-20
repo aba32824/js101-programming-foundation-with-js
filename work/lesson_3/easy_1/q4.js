@@ -10,4 +10,4 @@ let munstersDescription = "the Munsters are CREEPY and Spooky.";
 //    - String.prototype.toLowerCase().slice(1,) - to "lowercase" the rest of chars
 //    - and then concatenate all the above
 
-let desc = munstersDescription[0].toUpperCase() + munstersDescription.toLocaleLowerCase().slice(1,);
+let desc = munstersDescription[0].toUpperCase() + munstersDescription.toLowerCase().slice(1,);
