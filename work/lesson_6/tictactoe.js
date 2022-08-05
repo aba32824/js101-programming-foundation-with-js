@@ -49,13 +49,21 @@ function resetBoard() {
   });
 }
 
+function getValidRowIds() {
+  return Object.values(BOARD).map(row => row.rowId);
+}
+
+function getValidCellIds() {
+  return Array.from({length: Object.keys(BOARD).length}, (_, i) => i + 1);
+}
+
 function displayEmptyBoard() {
   let rowBorder = '+' + '-'.repeat(3);
   let rowSection = '|' + ' '.repeat(3);
 
   // getting Board's row and cell IDs to  display them to the player
-  let rowIds = Object.values(BOARD).map(row => row.rowId);
-  let cellIds = Array.from({length: Object.keys(BOARD).length}, (v, i) => i + 1);
+  let rowIds = getValidRowIds();
+  let cellIds = getValidCellIds();
   // just an empty line
   console.log();
   // to display cell IDs
@@ -99,18 +107,36 @@ function prompt(message) {
 function getHumanPlayerRowIdInput(text) {
   prompt(text);
   let rowId;
+
   while (true) {
     rowId = readline.question('> ').toUpperCase();
-    if (Object.values(BOARD).map(row => row.rowId).includes(rowId)) break;
-    prompt('[WARN] Please input a valid row ID!');
+    let validRowIds = getValidRowIds();
+    if (validRowIds.includes(rowId)) break;
+    prompt(`[WARN] Invalid row ID. Please use one from - ${validRowIds}`);
   }
   return rowId;
+}
+
+function getHumanPlayerCellIdInput(text) {
+  prompt(text);
+  let cellId;
+
+  while (true) {
+    cellId = readline.questionInt('> ');
+    let validCellIds = getValidCellIds();
+
+    if (validCellIds.includes(cellId)) break;
+    prompt(`[WARN] Invalid cell ID. Please one from - ${validCellIds}`);
+  }
+
+  return cellId;
 }
 
 displayGameRules();
 // Main loop
 while (true) {
   displayEmptyBoard();
-  let rowId = getHumanPlayerRowIdInput('Please specify row ID')
+  let rowId = getHumanPlayerRowIdInput('Please specify row ID');
+  let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
   break;
 }
