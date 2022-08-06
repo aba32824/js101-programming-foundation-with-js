@@ -152,38 +152,33 @@
 
 const readline = require('readline-sync');
 
-// Board that consists of rows/cells
+// Board that consists of 3 rows
 const BOARD = {
   A: {},
   B: {},
   C: {}
 };
-const CELL = {
-  mark: undefined,
-  player: null
-};
 
 // Players
 const COMPUTER_PLAYER = {
   name: "computer",
-  mark: "X"
+  mark: "X",
+  winner: false
 };
 const HUMAN_PLAYER = {
   name: "you",
-  mark: "0"
+  mark: "0",
+  winner: false
 };
 
 function initBoard() {
   Object.keys(BOARD).forEach(key => {
     for (let cellId = 1; cellId <= 3; cellId++) {
-      BOARD[key][cellId] = JSON.parse(JSON.stringify(CELL));
+      BOARD[key][cellId] = {
+        mark: null,
+        player: null
+      };
     }
-  });
-}
-
-function resetBoard() {
-  Object.keys(BOARD).forEach(key => {
-    BOARD[key] = {};
   });
 }
 
@@ -204,7 +199,7 @@ function displayBoard() {
 
   for (let rowId of getValidRowIds()) {
     let marks = Object.values(BOARD[rowId]).map((cell) => {
-      return (cell.mark !== undefined) ? ` ${cell.mark} ` : ' '.repeat(3);
+      return (cell.mark) ? ` ${cell.mark} ` : ' '.repeat(3);
     });
     console.log(` ${rowId} |${marks.join('|')}|`);
     console.log(' '.repeat(3) + rowBorder.repeat(3) + '+');
@@ -220,20 +215,61 @@ function letUserMarkBoard(rowId, cellId) {
   BOARD[rowId][cellId].player = HUMAN_PLAYER.name;
 }
 
-function letComputerMarkBoard() {
-  return null;
+function setWinnerStatus(mark) {
+  if (HUMAN_PLAYER.mark === mark) {
+    HUMAN_PLAYER.winner = true;
+  } else {
+    COMPUTER_PLAYER.winner = true;
+  }
 }
 
-function displayGameRules() {
-  console.log('*'.repeat(29) + " Tic Tac Toe " + '*'.repeat(29));
-  console.log("It's a 2-player game played on a 3x3 grid called the board.");
-  console.log("Each player takes a turn and marks a square on the board.");
-  console.log("A player wins if he/she gets 3 squares in:");
-  console.log(" - row–horizontal\n - vertical\n - or diagonal");
-  console.log("It's a tie if all 9 squares are filled and none has 3 in a row.");
-  console.log("To input your mark you have specify a row Id and cell Id.");
-  console.log("Row IDs are labeled as A, B or C, and cell IDs - 1, 2 and 3");
-  console.log('*'.repeat(70));
+function isAnyHorizontalRowComplete() {
+  for (let rowId of getValidRowIds()) {
+    let result = Object.values(BOARD[rowId]).filter(cell => cell.mark);
+    if (result.length === 3) {
+      let marks = [];
+      result.forEach(cell => {
+        if (!marks.includes(cell.mark)) marks.push(cell.mark);
+      });
+
+      if (marks.length === 1) {
+        setWinnerStatus(marks[0]);
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function isBoardFull() {
+  let cells = [];
+
+  getValidRowIds().forEach((rowId) => {
+    cells.push(Object.values(BOARD[rowId]).some(cell => cell.mark === null));
+  });
+
+  return cells.every(item => item === false);
+}
+
+function letComputerMarkBoard() {
+  let rowIds = getValidRowIds();
+  let flag = true;
+  do {
+    let randIdx = Math.floor(Math.random() * rowIds.length);
+    let rowId = rowIds[randIdx];
+    for (let cellId of Object.keys(BOARD[rowId])) {
+      let cell = BOARD[rowId][cellId];
+      if (!cell.mark) {
+        cell.mark = COMPUTER_PLAYER.mark;
+        cell.player = COMPUTER_PLAYER.name;
+        flag = false;
+        break;
+      }
+    }
+    // Stopping the computer loop if the board is full
+    if (isBoardFull()) break;
+  } while (flag);
 }
 
 function prompt(message) {
@@ -260,12 +296,23 @@ function getHumanPlayerCellIdInput(text) {
   while (true) {
     cellId = readline.questionInt('> ');
     let validCellIds = getValidCellIds();
-
     if (validCellIds.includes(cellId)) break;
     prompt(`[WARN] Invalid cell ID. Please get one from - ${validCellIds}`);
   }
 
   return cellId;
+}
+
+function displayGameRules() {
+  console.log('*'.repeat(29) + " Tic Tac Toe " + '*'.repeat(29));
+  console.log("It's a 2-player game played on a 3x3 grid called the board.");
+  console.log("Each player takes a turn and marks a square on the board.");
+  console.log("A player wins if he/she gets 3 squares in:");
+  console.log(" - row–horizontal\n - vertical\n - or diagonal");
+  console.log("It's a tie if all 9 squares are filled and none has 3 in a row.");
+  console.log("To input your mark you have specify a row Id and cell Id.");
+  console.log("Row IDs are labeled as A, B or C, and cell IDs - 1, 2 and 3");
+  console.log('*'.repeat(70));
 }
 
 displayGameRules();
@@ -278,6 +325,18 @@ while (true) {
   let rowId = getHumanPlayerRowIdInput('Please specify row ID');
   let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
   letUserMarkBoard(rowId, cellId);
-  console.log(BOARD[rowId][cellId]);
   displayBoard();
+  // process computer player input and assigning it to the board
+  letComputerMarkBoard();
+
+  if (isBoardFull()) {
+    prompt("The board is full, it's a tie!");
+    initBoard();
+  }
+
+  console.clear();
+  displayBoard();
+  if (isAnyHorizontalRowComplete()) {
+    prompt("There is a horizontal row complete!");
+  }
 }
