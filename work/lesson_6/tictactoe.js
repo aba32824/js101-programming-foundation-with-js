@@ -171,7 +171,12 @@ const HUMAN_PLAYER = {
   winner: false
 };
 
-function initBoard() {
+function resetWinnerFlag() {
+  HUMAN_PLAYER.winner = false;
+  COMPUTER_PLAYER.winner = false;
+}
+
+function initNewGame() {
   Object.keys(BOARD).forEach(key => {
     for (let cellId = 1; cellId <= 3; cellId++) {
       BOARD[key][cellId] = {
@@ -180,6 +185,7 @@ function initBoard() {
       };
     }
   });
+  resetWinnerFlag();
 }
 
 function getValidRowIds() {
@@ -207,7 +213,8 @@ function displayBoard() {
 }
 
 function displayWinner() {
-  return null;
+  let name = COMPUTER_PLAYER.winner ? COMPUTER_PLAYER.name : HUMAN_PLAYER.name;
+  prompt(`The winner is "${name}"!`);
 }
 
 function letUserMarkBoard(rowId, cellId) {
@@ -275,7 +282,7 @@ function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-function isNewGame() {
+function doesNewGameBegin() {
   do {
     prompt("Do you want to play a new game? Input 'y' to play or 'n' to exit");
     let answer = readline.question();
@@ -330,7 +337,7 @@ function displayGameRules() {
 }
 
 displayGameRules();
-initBoard();
+initNewGame();
 displayBoard();
 
 // Main loop
@@ -346,16 +353,13 @@ while (true) {
 
   if (isAnyHorizontalRowComplete()) {
     prompt("There is a horizontal row complete!");
+    displayWinner();
+    doesNewGameBegin() ? initNewGame() : process.exit(0);
   }
 
   if (isBoardFull()) {
     prompt("The board is full, it's a tie!");
-    if (isNewGame()) {
-      initBoard();
-    } else {
-      prompt('Exiting...');
-      break;
-    }
+    doesNewGameBegin() ? initNewGame() : process.exit(0);
   }
 
   console.clear();
