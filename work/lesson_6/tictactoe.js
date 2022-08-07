@@ -230,24 +230,33 @@ function setWinner(mark) {
   }
 }
 
-function isAnyHorizontalRowComplete() {
-  let rowComplete = {
+function getUniqueMarks(marks) {
+  return marks.filter((mark, index, self) => self.indexOf(mark) === index);
+}
+
+function getRowCompleteObject(rowName) {
+  return {
     complete: false,
     mark: null,
-    rowName: 'horizontal'
+    rowName: rowName
   };
+}
+
+function isAnyHorizontalRowComplete() {
+  let rowComplete = getRowCompleteObject('horizontal');
 
   for (let rowId of getValidRowIds()) {
-    let result = Object.values(BOARD[rowId]).filter(cell => cell.mark);
-    if (result.length !== 3) continue;
+    let marks = Object.values(BOARD[rowId])
+      .map(cell => cell.mark)
+      .filter(mark => mark);
 
-    let marks = result.map(cell => cell.mark).filter((mark, index, self) => {
-      return self.indexOf(mark) === index;
-    });
+    if (marks.length !== 3) continue;
 
-    if (marks.length === 1) {
+    let unique = getUniqueMarks(marks);
+
+    if (unique.length === 1) {
       rowComplete.complete = true;
-      rowComplete.mark = marks[0];
+      rowComplete.mark = unique[0];
       break;
     }
   }
@@ -256,11 +265,7 @@ function isAnyHorizontalRowComplete() {
 }
 
 function isAnyVerticalRowComplete() {
-  let rowComplete = {
-    complete: false,
-    mark: null,
-    rowName: 'vertical'
-  };
+  let rowComplete = getRowCompleteObject('vertical');
 
   for (let cellId of getValidCellIds()) {
     let marks = getValidRowIds()
@@ -269,7 +274,7 @@ function isAnyVerticalRowComplete() {
 
     if (marks.length !== 3) continue;
 
-    let unique = marks.filter((mark, index, self) => self.indexOf(mark) === index);
+    let unique = getUniqueMarks(marks);
 
     if (unique.length === 1) {
       rowComplete.complete = true;
@@ -417,6 +422,6 @@ while (true) {
     continueOrExitGame();
   }
 
-  console.clear();
+  //console.clear();
   displayBoard();
 }
