@@ -227,9 +227,8 @@ function isAnyHorizontalRowComplete() {
   for (let rowId of getValidRowIds()) {
     let result = Object.values(BOARD[rowId]).filter(cell => cell.mark);
     if (result.length === 3) {
-      let marks = [];
-      result.forEach(cell => {
-        if (!marks.includes(cell.mark)) marks.push(cell.mark);
+      let marks = result.map(cell => cell.mark).filter((mark, index, self) => {
+        return self.indexOf(mark) === index;
       });
 
       if (marks.length === 1) {
@@ -274,6 +273,21 @@ function letComputerMarkBoard() {
 
 function prompt(message) {
   console.log(`=> ${message}`);
+}
+
+function isNewGame() {
+  do {
+    prompt("Do you want to play a new game? Input 'y' to play or 'n' to exit");
+    let answer = readline.question();
+    if (answer.toLowerCase() === 'n') {
+      prompt('Exiting...');
+      return false;
+    } else if (answer.toLowerCase() === 'y') {
+      return true;
+    } else {
+      prompt("Please input either 'y' or 'n'");
+    }
+  } while (true);
 }
 
 function getHumanPlayerRowIdInput(text) {
@@ -324,19 +338,26 @@ while (true) {
   // processing human player input and assigning it to the board
   let rowId = getHumanPlayerRowIdInput('Please specify row ID');
   let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
+  // TODO: don't let the human player input row/cell that are in use already!!!
   letUserMarkBoard(rowId, cellId);
   displayBoard();
   // process computer player input and assigning it to the board
   letComputerMarkBoard();
 
+  if (isAnyHorizontalRowComplete()) {
+    prompt("There is a horizontal row complete!");
+  }
+
   if (isBoardFull()) {
     prompt("The board is full, it's a tie!");
-    initBoard();
+    if (isNewGame()) {
+      initBoard();
+    } else {
+      prompt('Exiting...');
+      break;
+    }
   }
 
   console.clear();
   displayBoard();
-  if (isAnyHorizontalRowComplete()) {
-    prompt("There is a horizontal row complete!");
-  }
 }
