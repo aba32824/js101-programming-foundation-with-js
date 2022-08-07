@@ -222,7 +222,7 @@ function letUserMarkBoard(rowId, cellId) {
   BOARD[rowId][cellId].player = HUMAN_PLAYER.name;
 }
 
-function setWinnerStatus(mark) {
+function setWinner(mark) {
   if (HUMAN_PLAYER.mark === mark) {
     HUMAN_PLAYER.winner = true;
   } else {
@@ -231,21 +231,54 @@ function setWinnerStatus(mark) {
 }
 
 function isAnyHorizontalRowComplete() {
+  let rowComplete = {
+    complete: false,
+    mark: null,
+    rowName: 'horizontal'
+  };
+
   for (let rowId of getValidRowIds()) {
     let result = Object.values(BOARD[rowId]).filter(cell => cell.mark);
-    if (result.length === 3) {
-      let marks = result.map(cell => cell.mark).filter((mark, index, self) => {
-        return self.indexOf(mark) === index;
-      });
+    if (result.length !== 3) continue;
 
-      if (marks.length === 1) {
-        setWinnerStatus(marks[0]);
-        return true;
-      }
+    let marks = result.map(cell => cell.mark).filter((mark, index, self) => {
+      return self.indexOf(mark) === index;
+    });
+
+    if (marks.length === 1) {
+      rowComplete.complete = true;
+      rowComplete.mark = marks[0];
+      break;
     }
   }
 
-  return false;
+  return rowComplete;
+}
+
+function isAnyVerticalRowComplete() {
+  let rowComplete = {
+    complete: false,
+    mark: null,
+    rowName: 'vertical'
+  };
+
+  for (let cellId of getValidCellIds()) {
+    let marks = getValidRowIds()
+      .map(rowId => BOARD[rowId][cellId].mark)
+      .filter(mark => mark);
+
+    if (marks.length !== 3) continue;
+
+    let unique = marks.filter((mark, index, self) => self.indexOf(mark) === index);
+
+    if (unique.length === 1) {
+      rowComplete.complete = true;
+      rowComplete.mark = unique[0];
+      break;
+    }
+  }
+
+  return rowComplete;
 }
 
 function isBoardFull() {
@@ -258,12 +291,16 @@ function isBoardFull() {
   return cells.every(item => item === false);
 }
 
-function letComputerMarkBoard() {
+function getRandomRowId() {
   let rowIds = getValidRowIds();
+  let randIdx = Math.floor(Math.random() * rowIds.length);
+  return rowIds[randIdx];
+}
+
+function letComputerMarkBoard() {
   let flag = true;
   do {
-    let randIdx = Math.floor(Math.random() * rowIds.length);
-    let rowId = rowIds[randIdx];
+    let rowId = getRandomRowId();
     for (let cellId of Object.keys(BOARD[rowId])) {
       let cell = BOARD[rowId][cellId];
       if (!cell.mark) {
@@ -299,8 +336,11 @@ function doesNewGameBegin() {
 
 function continueOrExitGame() {
   let decision = doesNewGameBegin();
-  if (decision) initNewGame();
-  process.exit(0);
+  if (decision) {
+    initNewGame();
+  } else {
+    process.exit(0);
+  }
 }
 
 function getHumanPlayerRowIdInput(text) {
@@ -342,6 +382,7 @@ function displayGameRules() {
   console.log('*'.repeat(70));
 }
 
+const CHECK_FUNCTION = [isAnyHorizontalRowComplete, isAnyVerticalRowComplete];
 displayGameRules();
 initNewGame();
 displayBoard();
@@ -357,13 +398,21 @@ while (true) {
   // process computer player input and assigning it to the board
   letComputerMarkBoard();
 
-  if (isAnyHorizontalRowComplete()) {
-    prompt("There is a horizontal row complete!");
-    displayWinner();
-    continueOrExitGame();
+  for (const func of CHECK_FUNCTION) {
+    let checkResult = func();
+    if (checkResult.complete) {
+      console.clear();
+      prompt(`There is a ${checkResult.rowName} row complete!`);
+      setWinner(checkResult.mark);
+      displayBoard();
+      displayWinner();
+      continueOrExitGame();
+    }
   }
 
   if (isBoardFull()) {
+    console.clear();
+    displayBoard();
     prompt("The board is full, it's a tie!");
     continueOrExitGame();
   }
