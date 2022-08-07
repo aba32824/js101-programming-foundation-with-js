@@ -297,6 +297,12 @@ function doesNewGameBegin() {
   } while (true);
 }
 
+function continueOrExitGame() {
+  let decision = doesNewGameBegin();
+  if (decision) initNewGame();
+  process.exit(0);
+}
+
 function getHumanPlayerRowIdInput(text) {
   prompt(text);
   let rowId;
@@ -354,12 +360,12 @@ while (true) {
   if (isAnyHorizontalRowComplete()) {
     prompt("There is a horizontal row complete!");
     displayWinner();
-    doesNewGameBegin() ? initNewGame() : process.exit(0);
+    continueOrExitGame();
   }
 
   if (isBoardFull()) {
     prompt("The board is full, it's a tie!");
-    doesNewGameBegin() ? initNewGame() : process.exit(0);
+    continueOrExitGame();
   }
 
   console.clear();
