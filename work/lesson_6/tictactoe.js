@@ -242,6 +242,16 @@ function getRowCompleteObject(rowName) {
   };
 }
 
+function getMarkForRow(marks) {
+  if (marks.length !== 3) return null;
+
+  let unique = getUniqueMarks(marks);
+  if (unique.length === 1) {
+    return unique[0];
+  }
+  return null;
+}
+
 function isAnyHorizontalRowComplete() {
   let rowComplete = getRowCompleteObject('horizontal');
 
@@ -250,13 +260,10 @@ function isAnyHorizontalRowComplete() {
       .map(cell => cell.mark)
       .filter(mark => mark);
 
-    if (marks.length !== 3) continue;
-
-    let unique = getUniqueMarks(marks);
-
-    if (unique.length === 1) {
+    let mark = getMarkForRow(marks);
+    if (mark) {
+      rowComplete.mark = mark;
       rowComplete.complete = true;
-      rowComplete.mark = unique[0];
       break;
     }
   }
@@ -272,13 +279,10 @@ function isAnyVerticalRowComplete() {
       .map(rowId => BOARD[rowId][cellId].mark)
       .filter(mark => mark);
 
-    if (marks.length !== 3) continue;
-
-    let unique = getUniqueMarks(marks);
-
-    if (unique.length === 1) {
+    let mark = getMarkForRow(marks);
+    if (mark) {
+      rowComplete.mark = mark;
       rowComplete.complete = true;
-      rowComplete.mark = unique[0];
       break;
     }
   }
