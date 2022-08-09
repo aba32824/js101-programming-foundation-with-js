@@ -216,7 +216,7 @@ function displayWinner() {
   prompt(`The winner is "${name}"!`);
 }
 
-function letUserMarkBoard(rowId, cellId) {
+function setUserMarkToBoard(rowId, cellId) {
   if (BOARD[rowId][cellId].mark === null) {
     BOARD[rowId][cellId].mark = HUMAN_PLAYER.mark;
     return true;
@@ -291,36 +291,37 @@ function getAnyVerticalRowComplete() {
   return rowComplete;
 }
 
+function buildDiagonalCombo(rowIds) {
+  let cellIds = getValidCellIds();
+  return rowIds.reduce((acc, key, idx) => ({...acc, [key]: cellIds[idx]}), {});
+}
+
+function getDiagonalCombos() {
+  let rowIds = getValidRowIds();
+  return [
+    buildDiagonalCombo(rowIds),
+    buildDiagonalCombo(rowIds.slice().reverse())
+  ];
+}
+
 function getAnyDiagonalRowComplete() {
   let rowComplete = getRowCompleteObject('diagonal');
-  let cellId = 1;
-  let marks = [];
+  let diagonalCombos = getDiagonalCombos();
 
-  for (let rowId of getValidRowIds()) {
-    if (BOARD[rowId][cellId].mark) marks.push(BOARD[rowId][cellId].mark);
-    cellId += 1;
-  }
-  let mark = getMarkForRow(marks);
+  for (let combo of diagonalCombos) {
+    let row = [];
+    for (let [rowId, cellId] of Object.entries(combo)) {
+      let cellMark = BOARD[rowId][cellId].mark;
+      if (cellMark) row.push(cellMark);
+    }
 
-  if (mark) {
-    rowComplete.mark = mark;
-    rowComplete.complete = true;
-    return rowComplete;
-  }
+    let mark = getMarkForRow(row);
 
-  cellId = 3;
-  marks = [];
-
-  for (let rowId of getValidRowIds()) {
-    if (BOARD[rowId][cellId].mark) marks.push(BOARD[rowId][cellId].mark);
-    cellId -= 1;
-  }
-  mark = getMarkForRow(marks);
-
-  if (mark) {
-    rowComplete.mark = mark;
-    rowComplete.complete = true;
-    return rowComplete;
+    if (mark) {
+      rowComplete.mark = mark;
+      rowComplete.complete = true;
+      break;
+    }
   }
 
   return rowComplete;
@@ -342,7 +343,7 @@ function getRandomRowId() {
   return rowIds[randIdx];
 }
 
-function letComputerMarkBoard() {
+function setComputerMarkToBoard() {
   let flag = true;
   do {
     let rowId = getRandomRowId();
@@ -363,18 +364,25 @@ function prompt(message) {
 }
 
 function doesNewGameBegin() {
+  let result = null;
   do {
     prompt("Do you want to play a new game? Input 'y' to play or 'n' to exit");
     let answer = readline.question();
+
     if (answer.toLowerCase() === 'n') {
       prompt('Exiting...');
-      return false;
+      result = false;
+      break;
     } else if (answer.toLowerCase() === 'y') {
-      return true;
+      result = true;
+      break;
     } else {
       prompt("Please input either 'y' or 'n'");
     }
+
   } while (true);
+
+  return result;
 }
 
 function doExitGame() {
@@ -439,7 +447,7 @@ while (true) {
     // processing human player input and assigning it to the board
     let rowId = getHumanPlayerRowIdInput('Please specify row ID');
     let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
-    let operationResult = letUserMarkBoard(rowId, cellId);
+    let operationResult = setUserMarkToBoard(rowId, cellId);
     if (operationResult) {
       break;
     } else {
@@ -448,7 +456,7 @@ while (true) {
   }
 
   displayBoard();
-  letComputerMarkBoard();
+  setComputerMarkToBoard();
 
   let checkResults = CHECK_FUNCTIONS
     .map(func => func())
