@@ -363,32 +363,22 @@ function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-function doesNewGameBegin() {
-  let result = null;
+function playAgain() {
+  prompt("Do you want to play a new game?");
+  prompt("Input 'y' to play again or 'n' to exit");
   do {
-    prompt("Do you want to play a new game? Input 'y' to play or 'n' to exit");
-    let answer = readline.question();
+    let answer = readline.question('> ').toLowerCase();
 
-    if (answer.toLowerCase() === 'n') {
+    if (answer === 'n') {
       prompt('Exiting...');
-      result = false;
-      break;
-    } else if (answer.toLowerCase() === 'y') {
-      result = true;
-      break;
+      return false;
+    } else if (answer === 'y') {
+      return true;
     } else {
       prompt("Please input either 'y' or 'n'");
     }
 
   } while (true);
-
-  return result;
-}
-
-function doExitGame() {
-  let decision = doesNewGameBegin();
-  if (decision) return false;
-  return true;
 }
 
 function getHumanPlayerRowIdInput(text) {
@@ -442,7 +432,6 @@ displayBoard();
 
 // Main loop
 while (true) {
-  // TODO: don't let the human player input row/cell that are in use already!!!
   while (true) {
     // processing human player input and assigning it to the board
     let rowId = getHumanPlayerRowIdInput('Please specify row ID');
@@ -463,12 +452,12 @@ while (true) {
     .filter(res => res.complete);
 
   if (checkResults.length) {
-    //console.clear();
+    console.clear();
     prompt(`There is a ${checkResults[0].rowName} row complete!`);
     setWinner(checkResults[0].mark);
     displayBoard();
     displayWinner();
-    if (doExitGame()) break;
+    if (!playAgain()) break;
     initNewGame();
   }
 
@@ -476,10 +465,10 @@ while (true) {
     console.clear();
     displayBoard();
     prompt("The board is full, it's a tie!");
-    if (doExitGame()) break;
+    if (!playAgain()) break;
     initNewGame();
   }
 
-  //console.clear();
+  console.clear();
   displayBoard();
 }
