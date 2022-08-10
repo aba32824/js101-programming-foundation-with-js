@@ -159,43 +159,48 @@ const BOARD = {
   C: {}
 };
 
-// Players
+// Players and their settings
 const COMPUTER_PLAYER = {
   name: "computer",
   mark: "X",
-  winner: false
+  winner: false,
+  winnerScore: 0
 };
 const HUMAN_PLAYER = {
-  name: "you",
+  name: "human being",
   mark: "0",
-  winner: false
+  winner: false,
+  winnerScore: 0
 };
+// Max scores for the match
+const NUM_OF_GAMES = 5;
 
 // it support 3 cells per row by default
 const FIRST_CELL_ID = 1;
 const LAST_CELL_ID = 3;
 
-function resetWinnerFlag() {
-  HUMAN_PLAYER.winner = false;
-  COMPUTER_PLAYER.winner = false;
+function resetWinnerFlagForPlayers() {
+  [HUMAN_PLAYER, COMPUTER_PLAYER].forEach(player => {
+    player.winner = false;
+  });
+}
+
+function resetScoresForPlayers() {
+  [HUMAN_PLAYER, COMPUTER_PLAYER].forEach(player => {
+    player.winnerScore = 0;
+  });
 }
 
 function initNewGame() {
   let rowIds = getValidRowIds();
+
   rowIds.forEach(rowId => {
     for (let cellId = FIRST_CELL_ID; cellId <= LAST_CELL_ID; cellId++) {
       BOARD[rowId][cellId] = { mark: null };
     }
   });
-  resetWinnerFlag();
-}
 
-function getValidRowIds() {
-  return Object.keys(BOARD);
-}
-
-function getValidCellIds() {
-  return Array.from({length: Object.keys(BOARD).length}, (_, id) => id + 1);
+  resetWinnerFlagForPlayers();
 }
 
 function displayBoard() {
@@ -215,11 +220,24 @@ function displayBoard() {
 }
 
 function displayWinner() {
-  let name = COMPUTER_PLAYER.winner ? COMPUTER_PLAYER.name : HUMAN_PLAYER.name;
+  let [winner] = [COMPUTER_PLAYER, HUMAN_PLAYER]
+    .filter(player => player.winner);
+  let name = winner.name;
+  let totalScore = winner.winnerScore;
+
   prompt(`The winner is "${name}"!`);
+
+  [COMPUTER_PLAYER, HUMAN_PLAYER].forEach(player => {
+    prompt(`Player "${player.name}" scores - ${player.winnerScore}`);
+  });
+
+  if (totalScore >= NUM_OF_GAMES) {
+    prompt(`"${name}" won the match! The total number of wins ${totalScore}!`);
+    resetScoresForPlayers();
+  }
 }
 
-function setUserMarkToBoard(rowId, cellId) {
+function setHumanPlayerMarkToBoard(rowId, cellId) {
   if (BOARD[rowId][cellId].mark === null) {
     BOARD[rowId][cellId].mark = HUMAN_PLAYER.mark;
     return true;
@@ -228,11 +246,10 @@ function setUserMarkToBoard(rowId, cellId) {
 }
 
 function setWinner(mark) {
-  if (HUMAN_PLAYER.mark === mark) {
-    HUMAN_PLAYER.winner = true;
-  } else {
-    COMPUTER_PLAYER.winner = true;
-  }
+  const [player] = [COMPUTER_PLAYER, HUMAN_PLAYER]
+    .filter(player => player.mark === mark);
+  player.winner = true;
+  player.winnerScore += 1;
 }
 
 function getUniqueMarks(marks) {
@@ -264,6 +281,14 @@ function setRowCompleteIfHasMark(marks, rowComplete) {
   rowComplete.complete = true;
 
   return true;
+}
+
+function getValidRowIds() {
+  return Object.keys(BOARD);
+}
+
+function getValidCellIds() {
+  return Array.from({length: Object.keys(BOARD).length}, (_, id) => id + 1);
 }
 
 function getAnyHorizontalRowComplete() {
@@ -415,7 +440,7 @@ function processHumanPlayerInput() {
   while (true) {
     let rowId = getHumanPlayerRowIdInput('Please specify row ID');
     let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
-    let operationResult = setUserMarkToBoard(rowId, cellId);
+    let operationResult = setHumanPlayerMarkToBoard(rowId, cellId);
     if (operationResult) {
       break;
     } else {
