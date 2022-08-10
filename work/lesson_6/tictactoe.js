@@ -343,20 +343,23 @@ function getRandomRowId() {
   return rowIds[randIdx];
 }
 
+function getRandomCellIdx(cellsLength) {
+  if (cellsLength === 1) return 0;
+  return Math.floor(Math.random() * cellsLength);
+}
+
 function setComputerMarkToBoard() {
-  let flag = true;
-  do {
+  if (isBoardFull()) return;
+
+  while (true) {
     let rowId = getRandomRowId();
-    for (let cellId of Object.keys(BOARD[rowId])) {
-      let cell = BOARD[rowId][cellId];
-      if (!cell.mark) {
-        cell.mark = COMPUTER_PLAYER.mark;
-        flag = false;
-        break;
-      }
+    let cells = Object.values(BOARD[rowId]).filter(cell => cell.mark === null);
+    if (cells.length) {
+      let cellIdx = getRandomCellIdx(cells.length);
+      cells[cellIdx].mark = COMPUTER_PLAYER.mark;
+      break;
     }
-    if (isBoardFull()) break;
-  } while (flag);
+  }
 }
 
 function prompt(message) {
