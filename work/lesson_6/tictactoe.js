@@ -408,6 +408,19 @@ function getHumanPlayerCellIdInput(text) {
   return cellId;
 }
 
+function processHumanPlayerInput() {
+  while (true) {
+    let rowId = getHumanPlayerRowIdInput('Please specify row ID');
+    let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
+    let operationResult = setUserMarkToBoard(rowId, cellId);
+    if (operationResult) {
+      break;
+    } else {
+      prompt('Please set either free row ID or cell ID');
+    }
+  }
+}
+
 function displayGameRules() {
   console.log('*'.repeat(29) + " Tic Tac Toe " + '*'.repeat(29));
   console.log("It's a 2-player game played on a 3x3 grid called the board.");
@@ -432,29 +445,18 @@ displayBoard();
 
 // Main loop
 while (true) {
-  while (true) {
-    // processing human player input and assigning it to the board
-    let rowId = getHumanPlayerRowIdInput('Please specify row ID');
-    let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
-    let operationResult = setUserMarkToBoard(rowId, cellId);
-    if (operationResult) {
-      break;
-    } else {
-      prompt('Please set either free row ID or cell ID');
-    }
-  }
-
+  processHumanPlayerInput();
   displayBoard();
   setComputerMarkToBoard();
 
-  let checkResults = CHECK_FUNCTIONS
-    .map(func => func())
+  let checkResults = CHECK_FUNCTIONS.map(func => func())
     .filter(res => res.complete);
 
-  if (checkResults.length) {
+  if (checkResults.length === 1) {
     console.clear();
-    prompt(`There is a ${checkResults[0].rowName} row complete!`);
-    setWinner(checkResults[0].mark);
+    const [mark, rowName] = [checkResults[0].mark, checkResults[0].rowName];
+    prompt(`There is a ${rowName} row complete!`);
+    setWinner(mark);
     displayBoard();
     displayWinner();
     if (!playAgain()) break;
