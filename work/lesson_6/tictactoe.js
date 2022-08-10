@@ -171,17 +171,20 @@ const HUMAN_PLAYER = {
   winner: false
 };
 
+// it support 3 cells per row by default
+const FIRST_CELL_ID = 1;
+const LAST_CELL_ID = 3;
+
 function resetWinnerFlag() {
   HUMAN_PLAYER.winner = false;
   COMPUTER_PLAYER.winner = false;
 }
 
 function initNewGame() {
-  Object.keys(BOARD).forEach(key => {
-    for (let cellId = 1; cellId <= 3; cellId++) {
-      BOARD[key][cellId] = {
-        mark: null
-      };
+  let rowIds = getValidRowIds();
+  rowIds.forEach(rowId => {
+    for (let cellId = FIRST_CELL_ID; cellId <= LAST_CELL_ID; cellId++) {
+      BOARD[rowId][cellId] = { mark: null };
     }
   });
   resetWinnerFlag();
@@ -236,7 +239,7 @@ function getUniqueMarks(marks) {
   return marks.filter((mark, index, self) => self.indexOf(mark) === index);
 }
 
-function getMarkForRow(marks) {
+function getMarkFromMarks(marks) {
   if (marks.length !== 3) return null;
 
   let unique = getUniqueMarks(marks);
@@ -253,6 +256,16 @@ function getRowCompleteObject(rowName) {
   };
 }
 
+function setRowCompleteIfHasMark(marks, rowComplete) {
+  let mark = getMarkFromMarks(marks);
+  if (!mark) return false;
+
+  rowComplete.mark = mark;
+  rowComplete.complete = true;
+
+  return true;
+}
+
 function getAnyHorizontalRowComplete() {
   let rowComplete = getRowCompleteObject('horizontal');
 
@@ -261,12 +274,8 @@ function getAnyHorizontalRowComplete() {
       .map(cell => cell.mark)
       .filter(mark => mark);
 
-    let mark = getMarkForRow(marks);
-    if (mark) {
-      rowComplete.mark = mark;
-      rowComplete.complete = true;
-      break;
-    }
+    let result = setRowCompleteIfHasMark(marks, rowComplete);
+    if (result) break;
   }
 
   return rowComplete;
@@ -280,12 +289,8 @@ function getAnyVerticalRowComplete() {
       .map(rowId => BOARD[rowId][cellId].mark)
       .filter(mark => mark);
 
-    let mark = getMarkForRow(marks);
-    if (mark) {
-      rowComplete.mark = mark;
-      rowComplete.complete = true;
-      break;
-    }
+    let result = setRowCompleteIfHasMark(marks, rowComplete);
+    if (result) break;
   }
 
   return rowComplete;
@@ -309,19 +314,14 @@ function getAnyDiagonalRowComplete() {
   let diagonalCombos = getDiagonalCombos();
 
   for (let combo of diagonalCombos) {
-    let row = [];
+    let marks = [];
     for (let [rowId, cellId] of Object.entries(combo)) {
       let cellMark = BOARD[rowId][cellId].mark;
-      if (cellMark) row.push(cellMark);
+      if (cellMark) marks.push(cellMark);
     }
 
-    let mark = getMarkForRow(row);
-
-    if (mark) {
-      rowComplete.mark = mark;
-      rowComplete.complete = true;
-      break;
-    }
+    let result = setRowCompleteIfHasMark(marks, rowComplete);
+    if (result) break;
   }
 
   return rowComplete;
