@@ -237,14 +237,6 @@ function displayWinner() {
   }
 }
 
-function setHumanPlayerMarkToBoard(rowId, cellId) {
-  if (BOARD[rowId][cellId].mark === null) {
-    BOARD[rowId][cellId].mark = HUMAN_PLAYER.mark;
-    return true;
-  }
-  return false;
-}
-
 function setWinner(mark) {
   const [player] = [COMPUTER_PLAYER, HUMAN_PLAYER]
     .filter(player => player.mark === mark);
@@ -409,42 +401,49 @@ function playAgain() {
   } while (true);
 }
 
-function getHumanPlayerRowIdInput(text) {
-  prompt(text);
-  let rowId;
+function setHumanPlayerMarkToBoard(coordinates) {
+  const {rowId, cellId} = coordinates;
 
-  while (true) {
-    rowId = readline.question('> ').toUpperCase();
-    let validRowIds = getValidRowIds();
-    if (validRowIds.includes(rowId)) break;
-    prompt(`[WARN] Invalid row ID. Please use one from - ${validRowIds}`);
+  if (BOARD[rowId][cellId].mark === null) {
+    BOARD[rowId][cellId].mark = HUMAN_PLAYER.mark;
+    return true;
   }
-  return rowId;
+  return false;
 }
 
-function getHumanPlayerCellIdInput(text) {
-  prompt(text);
-  let cellId;
+function getHumanPlayerInput() {
+  let validRowIds = getValidRowIds();
+  let validCellIds = getValidCellIds();
 
   while (true) {
-    cellId = readline.questionInt('> ');
-    let validCellIds = getValidCellIds();
-    if (validCellIds.includes(cellId)) break;
-    prompt(`[WARN] Invalid cell ID. Please get one from - ${validCellIds}`);
+    let [rowId, cellId] = readline.question('> ').toUpperCase().split('');
+    console.log(`> rowId ${rowId} | cellId ${cellId}`);
+    if (validRowIds.includes(rowId) && validCellIds.includes(Number(cellId))) {
+      return {
+        rowId: rowId,
+        cellId: cellId
+      };
+    } else {
+      prompt(`[WARN] Your input is invalid. Please retry.`);
+      prompt(`Valid row IDs - ${validRowIds}`);
+      prompt(`Valid cell IDs - ${validCellIds}`);
+    }
   }
-
-  return cellId;
 }
 
 function processHumanPlayerInput() {
   while (true) {
-    let rowId = getHumanPlayerRowIdInput('Please specify row ID');
-    let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
-    let operationResult = setHumanPlayerMarkToBoard(rowId, cellId);
+    prompt('Please specify row ID and cell ID to set your mark.');
+    let randRowId = getRandomRowId();
+    let randCellId = getRandomCellIdx(LAST_CELL_ID);
+    prompt(`For example: ${randRowId}${randCellId}`);
+    let coordinates = getHumanPlayerInput();
+    let operationResult = setHumanPlayerMarkToBoard(coordinates);
+
     if (operationResult) {
       break;
     } else {
-      prompt('Please set either free row ID or cell ID');
+      prompt('This cell is not free. Please specify the available cell.');
     }
   }
 }
@@ -477,12 +476,11 @@ while (true) {
   displayBoard();
   setComputerMarkToBoard();
 
-  let checkResults = CHECK_FUNCTIONS.map(func => func())
-    .filter(res => res.complete);
+  let check = CHECK_FUNCTIONS.map(func => func()).filter(res => res.complete);
 
-  if (checkResults.length === 1) {
+  if (check.length === 1) {
     console.clear();
-    const [mark, rowName] = [checkResults[0].mark, checkResults[0].rowName];
+    const [mark, rowName] = [check[0].mark, check[0].rowName];
     prompt(`There is a ${rowName} row complete!`);
     setWinner(mark);
     displayBoard();
