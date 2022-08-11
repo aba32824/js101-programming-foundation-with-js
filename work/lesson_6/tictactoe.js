@@ -159,43 +159,48 @@ const BOARD = {
   C: {}
 };
 
-// Players
+// Players and their settings
 const COMPUTER_PLAYER = {
   name: "computer",
   mark: "X",
-  winner: false
+  winner: false,
+  winnerScore: 0
 };
 const HUMAN_PLAYER = {
-  name: "you",
+  name: "human being",
   mark: "0",
-  winner: false
+  winner: false,
+  winnerScore: 0
 };
+// Max scores for the match
+const NUM_OF_GAMES = 5;
 
 // it support 3 cells per row by default
 const FIRST_CELL_ID = 1;
 const LAST_CELL_ID = 3;
 
-function resetWinnerFlag() {
-  HUMAN_PLAYER.winner = false;
-  COMPUTER_PLAYER.winner = false;
+function resetWinnerFlagForPlayers() {
+  [HUMAN_PLAYER, COMPUTER_PLAYER].forEach(player => {
+    player.winner = false;
+  });
+}
+
+function resetScoresForPlayers() {
+  [HUMAN_PLAYER, COMPUTER_PLAYER].forEach(player => {
+    player.winnerScore = 0;
+  });
 }
 
 function initNewGame() {
   let rowIds = getValidRowIds();
+
   rowIds.forEach(rowId => {
     for (let cellId = FIRST_CELL_ID; cellId <= LAST_CELL_ID; cellId++) {
       BOARD[rowId][cellId] = { mark: null };
     }
   });
-  resetWinnerFlag();
-}
 
-function getValidRowIds() {
-  return Object.keys(BOARD);
-}
-
-function getValidCellIds() {
-  return Array.from({length: Object.keys(BOARD).length}, (_, id) => id + 1);
+  resetWinnerFlagForPlayers();
 }
 
 function displayBoard() {
@@ -215,24 +220,28 @@ function displayBoard() {
 }
 
 function displayWinner() {
-  let name = COMPUTER_PLAYER.winner ? COMPUTER_PLAYER.name : HUMAN_PLAYER.name;
-  prompt(`The winner is "${name}"!`);
-}
+  let [winner] = [COMPUTER_PLAYER, HUMAN_PLAYER]
+    .filter(player => player.winner);
+  let name = winner.name;
+  let totalScore = winner.winnerScore;
 
-function setUserMarkToBoard(rowId, cellId) {
-  if (BOARD[rowId][cellId].mark === null) {
-    BOARD[rowId][cellId].mark = HUMAN_PLAYER.mark;
-    return true;
+  prompt(`The winner is "${name}"!`);
+
+  [COMPUTER_PLAYER, HUMAN_PLAYER].forEach(player => {
+    prompt(`Player "${player.name}" scores - ${player.winnerScore}`);
+  });
+
+  if (totalScore >= NUM_OF_GAMES) {
+    prompt(`"${name}" won the match! The total number of wins ${totalScore}!`);
+    resetScoresForPlayers();
   }
-  return false;
 }
 
 function setWinner(mark) {
-  if (HUMAN_PLAYER.mark === mark) {
-    HUMAN_PLAYER.winner = true;
-  } else {
-    COMPUTER_PLAYER.winner = true;
-  }
+  const [player] = [COMPUTER_PLAYER, HUMAN_PLAYER]
+    .filter(player => player.mark === mark);
+  player.winner = true;
+  player.winnerScore += 1;
 }
 
 function getUniqueMarks(marks) {
@@ -264,6 +273,14 @@ function setRowCompleteIfHasMark(marks, rowComplete) {
   rowComplete.complete = true;
 
   return true;
+}
+
+function getValidRowIds() {
+  return Object.keys(BOARD);
+}
+
+function getValidCellIds() {
+  return Array.from({length: Object.keys(BOARD).length}, (_, id) => id + 1);
 }
 
 function getAnyHorizontalRowComplete() {
@@ -384,42 +401,49 @@ function playAgain() {
   } while (true);
 }
 
-function getHumanPlayerRowIdInput(text) {
-  prompt(text);
-  let rowId;
+function setHumanPlayerMarkToBoard(coordinates) {
+  const {rowId, cellId} = coordinates;
 
-  while (true) {
-    rowId = readline.question('> ').toUpperCase();
-    let validRowIds = getValidRowIds();
-    if (validRowIds.includes(rowId)) break;
-    prompt(`[WARN] Invalid row ID. Please use one from - ${validRowIds}`);
+  if (BOARD[rowId][cellId].mark === null) {
+    BOARD[rowId][cellId].mark = HUMAN_PLAYER.mark;
+    return true;
   }
-  return rowId;
+  return false;
 }
 
-function getHumanPlayerCellIdInput(text) {
-  prompt(text);
-  let cellId;
+function getHumanPlayerInput() {
+  let validRowIds = getValidRowIds();
+  let validCellIds = getValidCellIds();
 
   while (true) {
-    cellId = readline.questionInt('> ');
-    let validCellIds = getValidCellIds();
-    if (validCellIds.includes(cellId)) break;
-    prompt(`[WARN] Invalid cell ID. Please get one from - ${validCellIds}`);
+    let [rowId, cellId] = readline.question('> ').toUpperCase().split('');
+    console.log(`> rowId ${rowId} | cellId ${cellId}`);
+    if (validRowIds.includes(rowId) && validCellIds.includes(Number(cellId))) {
+      return {
+        rowId: rowId,
+        cellId: cellId
+      };
+    } else {
+      prompt(`[WARN] Your input is invalid. Please retry.`);
+      prompt(`Valid row IDs - ${validRowIds}`);
+      prompt(`Valid cell IDs - ${validCellIds}`);
+    }
   }
-
-  return cellId;
 }
 
 function processHumanPlayerInput() {
   while (true) {
-    let rowId = getHumanPlayerRowIdInput('Please specify row ID');
-    let cellId = getHumanPlayerCellIdInput('Please specify cell ID');
-    let operationResult = setUserMarkToBoard(rowId, cellId);
+    prompt('Please specify row ID and cell ID to set your mark.');
+    let randRowId = getRandomRowId();
+    let randCellId = getRandomCellIdx(LAST_CELL_ID);
+    prompt(`For example: ${randRowId}${randCellId}`);
+    let coordinates = getHumanPlayerInput();
+    let operationResult = setHumanPlayerMarkToBoard(coordinates);
+
     if (operationResult) {
       break;
     } else {
-      prompt('Please set either free row ID or cell ID');
+      prompt('This cell is not free. Please specify the available cell.');
     }
   }
 }
@@ -452,12 +476,11 @@ while (true) {
   displayBoard();
   setComputerMarkToBoard();
 
-  let checkResults = CHECK_FUNCTIONS.map(func => func())
-    .filter(res => res.complete);
+  let check = CHECK_FUNCTIONS.map(func => func()).filter(res => res.complete);
 
-  if (checkResults.length === 1) {
+  if (check.length === 1) {
     console.clear();
-    const [mark, rowName] = [checkResults[0].mark, checkResults[0].rowName];
+    const [mark, rowName] = [check[0].mark, check[0].rowName];
     prompt(`There is a ${rowName} row complete!`);
     setWinner(mark);
     displayBoard();
