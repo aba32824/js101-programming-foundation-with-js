@@ -159,6 +159,8 @@ const BOARD = {
   C: {}
 };
 
+const BOARD_SIZE = Object.keys(BOARD).length;
+
 // Players and their settings
 const COMPUTER_PLAYER = {
   name: "computer",
@@ -250,7 +252,7 @@ function getUniqueMarks(marks) {
 }
 
 function getMarkFromMarks(marks) {
-  if (marks.length !== 3) return null;
+  if (marks.length !== BOARD_SIZE) return null;
 
   let unique = getUniqueMarks(marks);
   if (unique.length === 1) return unique[0];
@@ -292,8 +294,7 @@ function getAnyHorizontalRowComplete() {
       .map(cell => cell.mark)
       .filter(mark => mark);
 
-    let result = setRowCompleteIfHasMark(marks, rowComplete);
-    if (result) break;
+    if (setRowCompleteIfHasMark(marks, rowComplete)) break;
   }
 
   return rowComplete;
@@ -307,8 +308,7 @@ function getAnyVerticalRowComplete() {
       .map(rowId => BOARD[rowId][cellId].mark)
       .filter(mark => mark);
 
-    let result = setRowCompleteIfHasMark(marks, rowComplete);
-    if (result) break;
+    if (setRowCompleteIfHasMark(marks, rowComplete)) break;
   }
 
   return rowComplete;
@@ -338,8 +338,7 @@ function getAnyDiagonalRowComplete() {
       if (cellMark) marks.push(cellMark);
     }
 
-    let result = setRowCompleteIfHasMark(marks, rowComplete);
-    if (result) break;
+    if (setRowCompleteIfHasMark(marks, rowComplete)) break;
   }
 
   return rowComplete;
@@ -379,11 +378,18 @@ function fixThreatInRow(row) {
   cell.mark = COMPUTER_PLAYER.mark;
 }
 
-function fixHorizontalThreat() {
-  for (let rowId of getValidRowIds()) {
+function getFreeHorizontalRowIds() {
+  return getValidRowIds().filter(rowId => {
     let row = Object.values(BOARD[rowId]);
+    return !isRowFull(row);
+  });
+}
 
-    if (isRowFull(row)) continue;
+function fixHorizontalThreat() {
+  let freeRowIds = getFreeHorizontalRowIds();
+
+  for (let rowId of freeRowIds) {
+    let row = Object.values(BOARD[rowId]);
 
     if (hasThreatLevel(row)) {
       fixThreatInRow(row);
@@ -394,11 +400,22 @@ function fixHorizontalThreat() {
   return false;
 }
 
-function fixVerticalThreat() {
-  for (let cellId of getValidCellIds()) {
-    let row = getValidRowIds().map(rowId => BOARD[rowId][cellId]);
+function getVerticalRow(cellId) {
+  return getValidRowIds().map(rowId => BOARD[rowId][cellId]);
+}
 
-    if (isRowFull(row)) continue;
+function getFreeCellIds() {
+  return getValidCellIds().filter(cellId => {
+    let row = getVerticalRow(cellId);
+    return !isRowFull(row);
+  });
+}
+
+function fixVerticalThreat() {
+  let freeCellIds = getFreeCellIds();
+
+  for (let cellId of freeCellIds) {
+    let row = getVerticalRow(cellId);
 
     if (hasThreatLevel(row)) {
       fixThreatInRow(row);
@@ -445,6 +462,7 @@ function setComputerRandomMark() {
   while (true) {
     let rowId = getRandomRowId();
     let cell = getFreeCell(Object.values(BOARD[rowId]));
+
     if (cell) {
       cell.mark = COMPUTER_PLAYER.mark;
       break;
@@ -514,8 +532,8 @@ function processHumanPlayerInput() {
   while (true) {
     prompt('Please specify row ID and cell ID to set your mark.');
     prompt('For example: A1, C2 or B3');
-    let coordinates = getHumanPlayerInput();
-    let setMarkResult = setHumanPlayerMarkToBoard(coordinates);
+    let input = getHumanPlayerInput();
+    let setMarkResult = setHumanPlayerMarkToBoard(input);
 
     if (setMarkResult) {
       break;
@@ -580,6 +598,7 @@ while (true) {
         stopGame = true;
         break;
       }
+      console.clear();
       initNewGame();
     }
   }
