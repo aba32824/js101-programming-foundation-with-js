@@ -179,7 +179,7 @@ const NUM_OF_GAMES = 5;
 
 // it support 3 cells per row by default
 const FIRST_CELL_ID = 1;
-const LAST_CELL_ID = 3;
+const LAST_CELL_ID = BOARD_SIZE;
 const THREAT_LEVEL = LAST_CELL_ID - FIRST_CELL_ID;
 
 function resetWinnerFlagForPlayers() {
@@ -211,14 +211,14 @@ function displayBoard() {
 
   console.log();
   console.log(' '.repeat(5) + getValidCellIds().join(' | '));
-  console.log(' '.repeat(3) + rowBorder.repeat(3) + '+');
+  console.log(' '.repeat(3) + rowBorder.repeat(BOARD_SIZE) + '+');
 
   for (let rowId of getValidRowIds()) {
     let marks = Object.values(BOARD[rowId]).map((cell) => {
       return (cell.mark) ? ` ${cell.mark} ` : ' '.repeat(3);
     });
     console.log(` ${rowId} |${marks.join('|')}|`);
-    console.log(' '.repeat(3) + rowBorder.repeat(3) + '+');
+    console.log(' '.repeat(3) + rowBorder.repeat(BOARD_SIZE) + '+');
   }
 }
 
