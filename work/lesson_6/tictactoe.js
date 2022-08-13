@@ -346,8 +346,8 @@ function getAnyDiagonalRowComplete() {
 
 function isBoardFull() {
   for (let rowId of getValidRowIds()) {
-    let check = Object.values(BOARD[rowId]).some(cell => cell.mark === null);
-    if (check) return false;
+    let row = Object.values(BOARD[rowId]);
+    if (!isRowFull(row)) return false;
   }
 
   return true;
