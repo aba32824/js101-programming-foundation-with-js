@@ -178,6 +178,7 @@ const NUM_OF_GAMES = 5;
 // it support 3 cells per row by default
 const FIRST_CELL_ID = 1;
 const LAST_CELL_ID = 3;
+const THREAT_LEVEL = LAST_CELL_ID - FIRST_CELL_ID;
 
 function resetWinnerFlagForPlayers() {
   [HUMAN_PLAYER, COMPUTER_PLAYER].forEach(player => {
@@ -295,6 +296,7 @@ function getAnyHorizontalRowComplete() {
     if (result) break;
   }
 
+  console.log(`>> horizontal row: ${JSON.stringify(rowComplete)}`);
   return rowComplete;
 }
 
@@ -310,6 +312,7 @@ function getAnyVerticalRowComplete() {
     if (result) break;
   }
 
+  console.log(`>> vertical row: ${JSON.stringify(rowComplete)}`);
   return rowComplete;
 }
 
@@ -340,6 +343,7 @@ function getAnyDiagonalRowComplete() {
     let result = setRowCompleteIfHasMark(marks, rowComplete);
     if (result) break;
   }
+  console.log(`>> diagonal row: ${JSON.stringify(rowComplete)}`);
 
   return rowComplete;
 }
@@ -360,23 +364,109 @@ function getRandomRowId() {
   return rowIds[randIdx];
 }
 
-function getRandomCellIdx(cellsLength) {
-  if (cellsLength === 1) return 0;
-  return Math.floor(Math.random() * cellsLength);
+function isRowFull(row) {
+  return row.every(cell => cell.mark !== null);
+}
+
+function hasThreatLevel(row) {
+  let result = row.filter(cell => cell.mark === HUMAN_PLAYER.mark);
+  return result.length === THREAT_LEVEL;
+}
+
+function getFreeCell(cells) {
+  let result = cells.filter(cell => cell.mark === null);
+  if (result.length) return result[0];
+  return null;
+}
+
+function hasHorizontalThreat() {
+  for (let rowId of getValidRowIds()) {
+    let row = Object.values(BOARD[rowId]);
+    console.log(`>> horizontal row: ${JSON.stringify(row)}`);
+    if (isRowFull(row)) continue;
+
+    if (hasThreatLevel(row)) {
+      console.log('> WARN - there is a horizontal threat!');
+      return true;
+    }
+  }
+  return false;
+}
+
+function getHorizontalCellForAIDefense() {
+  let rowIds = getValidRowIds();
+  for (let rowId of rowIds) {
+    let cell = getFreeCell(Object.values(BOARD[rowId]));
+    if (cell) return cell;
+  }
+  return null;
+}
+
+function hasVerticalThreat() {
+  for (let cellId of getValidCellIds()) {
+    let row = getValidRowIds().map(rowId => BOARD[rowId][cellId]);
+    console.log(`>> vertical row: ${JSON.stringify(row)}`);
+    if (isRowFull(row)) continue;
+
+    if (hasThreatLevel(row)) {
+      console.log('> WARN - there is a vertical threat!');
+      return true;
+    }
+  }
+  return false;
+}
+
+function getVerticalCellForAIDefense() {
+  for (let cellId of getValidCellIds()) {
+    let rowIds = getValidRowIds();
+    let cell = getFreeCell(rowIds.map(rowId => BOARD[rowId][cellId]));
+    if (cell) return cell;
+  }
+  return null;
+}
+
+const AI_DEFENSE_DISPATCH_TABLE = [
+  {
+    checkFunc: hasHorizontalThreat,
+    getFreeCellFunc: getHorizontalCellForAIDefense
+  },
+  {
+    checkFunc: hasVerticalThreat,
+    getFreeCellFunc: getVerticalCellForAIDefense
+  }
+];
+
+function setComputerMarkToDefenseItself() {
+  for (let checkObject of AI_DEFENSE_DISPATCH_TABLE) {
+    let {checkFunc, getFreeCellFunc} = checkObject;
+    if (checkFunc()) {
+      let cell = getFreeCellFunc();
+      if (cell) {
+        cell.mark = COMPUTER_PLAYER.mark;
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function setComputerRandomMark() {
+  while (true) {
+    let rowId = getRandomRowId();
+    let cell = getFreeCell(Object.values(BOARD[rowId]));
+    if (cell) {
+      cell.mark = COMPUTER_PLAYER.mark;
+      break;
+    }
+  }
 }
 
 function setComputerMarkToBoard() {
   if (isBoardFull()) return;
 
-  while (true) {
-    let rowId = getRandomRowId();
-    let cells = Object.values(BOARD[rowId]).filter(cell => cell.mark === null);
-    if (cells.length) {
-      let cellIdx = getRandomCellIdx(cells.length);
-      cells[cellIdx].mark = COMPUTER_PLAYER.mark;
-      break;
-    }
-  }
+  let defenseStatus = setComputerMarkToDefenseItself();
+  if (!defenseStatus) setComputerRandomMark();
 }
 
 function prompt(message) {
@@ -417,7 +507,6 @@ function getHumanPlayerInput() {
 
   while (true) {
     let [rowId, cellId] = readline.question('> ').toUpperCase().split('');
-    console.log(`> rowId ${rowId} | cellId ${cellId}`);
     if (validRowIds.includes(rowId) && validCellIds.includes(Number(cellId))) {
       return {
         rowId: rowId,
@@ -434,9 +523,7 @@ function getHumanPlayerInput() {
 function processHumanPlayerInput() {
   while (true) {
     prompt('Please specify row ID and cell ID to set your mark.');
-    let randRowId = getRandomRowId();
-    let randCellId = getRandomCellIdx(LAST_CELL_ID);
-    prompt(`For example: ${randRowId}${randCellId}`);
+    prompt('For example: A1, C2 or B3');
     let coordinates = getHumanPlayerInput();
     let operationResult = setHumanPlayerMarkToBoard(coordinates);
 
@@ -457,6 +544,8 @@ function displayGameRules() {
   console.log("It's a tie if all 9 squares are filled and none has 3 in a row.");
   console.log("To input your mark you have specify a row Id and cell Id.");
   console.log("Row IDs are labeled as A, B or C, and cell IDs - 1, 2 and 3");
+  console.log(`Human player mark is "${HUMAN_PLAYER.mark}"`);
+  console.log(`Computer player mark is "${COMPUTER_PLAYER.mark}"`);
   console.log('*'.repeat(70));
 }
 
@@ -478,8 +567,8 @@ while (true) {
 
   let check = CHECK_FUNCTIONS.map(func => func()).filter(res => res.complete);
 
-  if (check.length === 1) {
-    console.clear();
+  if (check.length) {
+    //console.clear();
     const [mark, rowName] = [check[0].mark, check[0].rowName];
     prompt(`There is a ${rowName} row complete!`);
     setWinner(mark);
@@ -490,13 +579,13 @@ while (true) {
   }
 
   if (isBoardFull()) {
-    console.clear();
+    //console.clear();
     displayBoard();
     prompt("The board is full, it's a tie!");
     if (!playAgain()) break;
     initNewGame();
   }
 
-  console.clear();
+  //console.clear();
   displayBoard();
 }
