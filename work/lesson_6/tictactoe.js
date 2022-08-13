@@ -364,8 +364,8 @@ function isRowFull(row) {
   return row.every(cell => cell.mark !== null);
 }
 
-function hasThreatLevel(row) {
-  let result = row.filter(cell => cell.mark === HUMAN_PLAYER.mark);
+function hasThreatLevel(row, targetMark) {
+  let result = row.filter(cell => cell.mark === targetMark);
   return result.length === THREAT_LEVEL;
 }
 
@@ -385,13 +385,13 @@ function getFreeHorizontalRowIds() {
   });
 }
 
-function fixHorizontalThreat() {
+function fixHorizontalThreat(targetMark) {
   let freeRowIds = getFreeHorizontalRowIds();
 
   for (let rowId of freeRowIds) {
     let row = Object.values(BOARD[rowId]);
 
-    if (hasThreatLevel(row)) {
+    if (hasThreatLevel(row, targetMark)) {
       fixThreatInRow(row);
       return true;
     }
@@ -411,13 +411,13 @@ function getFreeCellIds() {
   });
 }
 
-function fixVerticalThreat() {
+function fixVerticalThreat(targetMark) {
   let freeCellIds = getFreeCellIds();
 
   for (let cellId of freeCellIds) {
     let row = getVerticalRow(cellId);
 
-    if (hasThreatLevel(row)) {
+    if (hasThreatLevel(row, targetMark)) {
       fixThreatInRow(row);
       return true;
     }
@@ -426,7 +426,7 @@ function fixVerticalThreat() {
   return false;
 }
 
-function fixDiagonalThreat() {
+function fixDiagonalThreat(targetMark) {
   for (let combo of getDiagonalCombos()) {
     let row = [];
     Object.entries(combo).forEach(([rowId, cellId]) => {
@@ -435,7 +435,7 @@ function fixDiagonalThreat() {
 
     if (isRowFull(row)) continue;
 
-    if (hasThreatLevel(row)) {
+    if (hasThreatLevel(row, targetMark)) {
       fixThreatInRow(row);
       return true;
     }
@@ -444,15 +444,16 @@ function fixDiagonalThreat() {
   return false;
 }
 
-const AI_DEFENSE_DISPATCH_TABLE = [
+const AI_DISPATCH_TABLE = [
   fixHorizontalThreat,
   fixVerticalThreat,
   fixDiagonalThreat
 ];
 
-function setComputerMarkToDefenseItself() {
-  for (let fixFunc of AI_DEFENSE_DISPATCH_TABLE) {
-    if (fixFunc()) return true;
+function setComputerMark(targetMark) {
+
+  for (let fixFunc of AI_DISPATCH_TABLE) {
+    if (fixFunc(targetMark)) return true;
   }
 
   return false;
@@ -472,8 +473,12 @@ function setComputerRandomMark() {
 
 function processComputerPlayerInput() {
   if (isBoardFull()) return;
-
-  let defenseStatus = setComputerMarkToDefenseItself();
+  // trying to offensive mode for the computer player
+  let attackStatus = setComputerMark(COMPUTER_PLAYER.mark);
+  if (attackStatus) console.log(`--> Computer attacked and got the win!`);
+  if (attackStatus) return;
+  // trying to defense the computer player
+  let defenseStatus = setComputerMark(HUMAN_PLAYER.mark);
   if (!defenseStatus) setComputerRandomMark();
 }
 
@@ -481,7 +486,7 @@ function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-function playAgain() {
+function stopTheGame() {
   prompt("Do you want to play a new game?");
   prompt("Input 'y' to play again or 'n' to exit");
   do {
@@ -489,9 +494,9 @@ function playAgain() {
 
     if (answer === 'n') {
       prompt('Exiting...');
-      return false;
-    } else if (answer === 'y') {
       return true;
+    } else if (answer === 'y') {
+      return false;
     } else {
       prompt("Please input either 'y' or 'n'");
     }
@@ -535,11 +540,9 @@ function processHumanPlayerInput() {
     let input = getHumanPlayerInput();
     let setMarkResult = setHumanPlayerMarkToBoard(input);
 
-    if (setMarkResult) {
-      break;
-    } else {
-      prompt('This cell is busy. Please specify the available cell.');
-    }
+    if (setMarkResult) break;
+
+    prompt('This cell is busy. Please specify the available cell.');
   }
 }
 
@@ -588,22 +591,16 @@ const PROCESS_PLAYERS_INPUT = [
 ];
 
 // Main loop
-while (true) {
-  let stopGame = false;
+MAIN: while (true) {
 
   for (let inputFunc of PROCESS_PLAYERS_INPUT) {
     inputFunc();
     if (checkBoardHasAnyRowComplete()) {
-      if (!playAgain()) {
-        stopGame = true;
-        break;
-      }
+      if (stopTheGame()) break MAIN;
       console.clear();
       initNewGame();
     }
   }
-
-  if (stopGame) break;
 
   displayBoard();
 
@@ -611,8 +608,9 @@ while (true) {
     console.clear();
     displayBoard();
     prompt("The board is full, it's a tie!");
-    if (!playAgain()) break;
+    if (stopTheGame()) break;
     initNewGame();
+    console.clear();
     displayBoard();
   }
 }
