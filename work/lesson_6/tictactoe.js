@@ -345,13 +345,12 @@ function getAnyDiagonalRowComplete() {
 }
 
 function isBoardFull() {
-  let cells = [];
+  for (let rowId of getValidRowIds()) {
+    let check = Object.values(BOARD[rowId]).some(cell => cell.mark === null);
+    if (check) return false;
+  }
 
-  getValidRowIds().forEach((rowId) => {
-    cells.push(Object.values(BOARD[rowId]).some(cell => cell.mark === null));
-  });
-
-  return cells.every(item => item === false);
+  return true;
 }
 
 function getRandomRowId() {
