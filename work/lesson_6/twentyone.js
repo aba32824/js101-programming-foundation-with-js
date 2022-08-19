@@ -18,10 +18,16 @@ const MAJOR_CARDS_MAP = {
   K: 'King',
   A: 'Ace'
 };
+// These are for regular cards (i.e., from 2 till 10)
 const LOWER_VALUE = 2;
 const UPPER_VALUE = 10;
-const PLAYER_BUST_SCORE = 21;
-const DEALER_BUST_SCORE = 17;
+// Settings for different groups of cards
+const MAJOR_CARDS_VALUE = 10;
+const ACE_CARD_MAX_VALUE = 11;
+const ACE_CARD_REDUCED_VALUE = 10;
+// Limits for the punter and delear
+const TOTAL_LIMIT_SCORE = 21;
+const DEALER_LIMIT_SCORE = 17;
 
 const PLAYER = {
   name: 'Player',
@@ -37,8 +43,8 @@ const DEALER = {
   scores: 0
 };
 
-function isHandPlayer(player) {
-  return player.name === 'Player';
+function prompt(message) {
+  console.log(`=> ${message}`);
 }
 
 function isCardValueMajor(value) {
@@ -71,8 +77,10 @@ function initilizeDeck() {
   return shuffle(deck);
 }
 
-function dealCards() {
-  return null;
+function dealInitCards(deck) {
+  [PLAYER, DEALER].forEach(hand => {
+    [1, 2].forEach(_ => hand.cards.push(deck.shift()));
+  });
 }
 
 function doHit(hand, deck) {
@@ -80,45 +88,41 @@ function doHit(hand, deck) {
 }
 
 function calcCardValue(value) {
-  if (value === 'A') return 11;
-  if (['J', 'Q', 'K'].includes(value)) return 10;
+  if (value === 'A') return ACE_CARD_MAX_VALUE;
+  if (['J', 'Q', 'K'].includes(value)) return MAJOR_CARDS_VALUE;
   return Number(value);
 }
 
 function getCountForAces(values) {
-  return values.filter(value => value === 'A').lenght;
+  let aceCount = values.filter(value => value === 'A');
+  if (aceCount.length) {
+    return aceCount.length - 1;
+  }
+  return 0;
 }
 
-function calcCardTotal(cards, limit) {
+function calcCardTotal(cards) {
   let values = cards.map(card => card[1]);
   let total = values.reduce((acc, value) => acc + calcCardValue(value), 0);
 
-  if (total > limit) {
+  if (total > TOTAL_LIMIT_SCORE) {
     let aceCount = getCountForAces(values);
-    if (aceCount) total -= aceCount * 10;
+    console.log(`==> Player ace count - ${aceCount}`);
+    if (aceCount) total -= aceCount * ACE_CARD_REDUCED_VALUE;
   }
 
   return total;
 }
 
 function gotBusted(hand) {
-  const limit = (isHandPlayer(hand)) ? PLAYER_BUST_SCORE : DEALER_BUST_SCORE;
-  let total = calcCardTotal(hand.cards, limit);
-  console.log(`> checking if "${hand.name}" got busted - ${total} scores`);
+  let total = calcCardTotal(hand.cards);
 
-  if (total > limit) {
+  if (total > TOTAL_LIMIT_SCORE) {
     hand.busted = true;
+    prompt(`"${hand.name}" got busted having ${total} scores`);
     return true;
   }
   return false;
-}
-
-function compareCards() {
-  return null;
-}
-
-function declareWinner() {
-  return null;
 }
 
 function displayHandCards(hand, showAllDealerCards = false) {
@@ -132,75 +136,133 @@ function displayHandCards(hand, showAllDealerCards = false) {
     if (showAllDealerCards) {
       hand.cards.forEach(card => values.push(getCardValue(card[1])));
     } else {
-      [getCardValue(hand.cards[0][1], 'unknown card')].forEach(value => {
+      [getCardValue(hand.cards[0][1]), 'unknown card'].forEach(value => {
         values.push(value);
       });
     }
   }
 
-  console.log(`${hand.name} has: ${values.join(' and ')}`);
+  prompt(`${hand.name} has: ${values.join(' and ')}`);
+}
+
+function displayTotalScoresForAllPlayers() {
+  [PLAYER, DEALER].forEach(hand => {
+    let cardTotal = calcCardTotal(hand.cards);
+    prompt(`${hand.name} had ${cardTotal} scores`);
+  });
+}
+
+function getHandWithMaxScore() {
+  let highScoreHand = [PLAYER, DEALER].reduce((prev, current) => {
+    let totalPrev = calcCardTotal(prev.cards);
+    let totalCurrent = calcCardTotal(current.cards);
+    return (totalPrev > totalCurrent) ? prev : current;
+  });
+
+  console.log(`>> getting hand with Max Scores: ${JSON.stringify(highScoreHand)}`);
+  return highScoreHand;
+}
+
+function displayWinner() {
+  let busted = [PLAYER, DEALER].filter(hand => hand.busted)[0];
+
+  if (busted) {
+    prompt(`"${busted.name}" busted and loses this round.`);
+    let winner = [PLAYER, DEALER].filter(hand => !hand.busted)[0];
+    winner.scores += 1;
+    prompt(`"${winner.name}" is the winner!`);
+    return;
+  }
+
+  if (calcCardTotal(PLAYER.cards) === calcCardTotal(DEALER.cards)) {
+    prompt("It's a tie!");
+  } else {
+    let hand = getHandWithMaxScore();
+    hand.scores += 1;
+    prompt(`The winner is "${hand.name}"`);
+  }
+}
+
+function doesPlayerWantToStay() {
+  let answer;
+  do {
+    prompt('hit or stay?');
+    answer = readline.question('> ').toLowerCase();
+    if (answer === 'stay' || answer === 'hit') {
+      break;
+    } else {
+      prompt('Please specify either "hit" or "stay"!');
+    }
+  } while (true);
+
+  return answer === 'stay';
 }
 
 function doPlayerLoop(deck) {
   while (true) {
-    console.log('hit or stay?');
-    let answer = readline.question('> ').toLowerCase();
-    if (answer === 'stay') break;
+    if (doesPlayerWantToStay()) break;
+
+    console.log("==> Player is in doPlayerLoop func");
 
     doHit(PLAYER, deck);
     displayHandCards(PLAYER);
 
-    if (gotBusted(PLAYER)) {
-      console.log(`${PLAYER.name} busted!`);
-      console.log(`${DEALER.name} won this turn!`);
+    if (gotBusted(PLAYER)) break;
+  }
+}
+
+function doDealerLoop(deck) {
+  while (true) {
+    if (gotBusted(DEALER)) {
       break;
+    }
+
+    if (calcCardTotal(DEALER.cards) >= DEALER_LIMIT_SCORE) {
+      prompt(`${DEALER.name} wants to stay`);
+      break;
+    } else if (calcCardTotal(DEALER.cards) < DEALER_LIMIT_SCORE) {
+      doHit(DEALER, deck);
+      prompt(`${DEALER.name} did a hit!`);
+      continue;
     }
   }
 }
 
 // the main loop
-while (true) {
+MAIN: while (true) {
   let deck = initilizeDeck();
-  console.log(`> card deck ${JSON.stringify(deck)}`);
-  console.log(`> card deck size ${deck.length}`);
+  dealInitCards(deck);
 
-  [PLAYER, DEALER].forEach(hand => {
-    [1, 2].forEach(_ => hand.cards.push(deck.shift()));
-  });
-
-  console.log(`> card deck size ${deck.length}`);
   console.log(`> PLAYER - ${JSON.stringify(PLAYER)}`);
   console.log(`> DEALER - ${JSON.stringify(DEALER)}`);
 
   [PLAYER, DEALER].forEach(hand => displayHandCards(hand));
+
   // Player's loop
   doPlayerLoop(deck);
 
   // Dealer's loop
-  if (!PLAYER.busted) {
-    while (true) {
-      if (gotBusted(DEALER)) {
-        console.log(`${DEALER.name} busted!`);
-        console.log(`${PLAYER.name} won this turn!`);
-        break;
-      }
-      console.log('Dealer is OK');
-      if (calcCardTotal(DEALER.cards) === DEALER_BUST_SCORE) {
-        console.log(`${DEALER.name} wants to stay`);
-        break;
-      } else {
-        doHit(DEALER, deck);
-        console.log(`${DEALER.name} did a hit!`);
-        continue;
-      }
-    }
-  }
+  if (!PLAYER.busted) doDealerLoop(deck);
 
   let showAllDealerCards = true;
   [PLAYER, DEALER].forEach(hand => displayHandCards(hand, showAllDealerCards));
-  [PLAYER, DEALER].forEach(hand => {
-    console.log(`${hand.name} had ${calcCardTotal(hand.cards)} scores`);
-  });
+  displayWinner();
+  displayTotalScoresForAllPlayers();
 
-  break;
+  do {
+    prompt('Do you want to play again? Answer "y" to continue or "n" to exit');
+    let answer = readline.question('> ').toLowerCase();
+    if (!['y', 'n'].includes(answer)) {
+      prompt('Wrong answer. Please input either "y" or "n"');
+      continue;
+    }
+    if (answer === 'y') {
+      [PLAYER, DEALER].forEach(hand => {
+        hand.cards.length = 0;
+        hand.busted = false;
+      });
+      break;
+    }
+    if (answer === 'n') break MAIN;
+  } while (true);
 }
