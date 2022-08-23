@@ -181,6 +181,10 @@ function displayMatchWinner() {
   }
 }
 
+function gotTie() {
+  return calcCardTotal(PLAYER.cards) === calcCardTotal(DEALER.cards);
+}
+
 function displayWinner() {
   let busted = [PLAYER, DEALER].filter(hand => hand.busted)[0];
 
@@ -192,7 +196,7 @@ function displayWinner() {
     return;
   }
 
-  if (calcCardTotal(PLAYER.cards) === calcCardTotal(DEALER.cards)) {
+  if (gotTie()) {
     prompt("It's a tie!");
   } else {
     let hand = getHandWithMaxScore();
@@ -234,10 +238,12 @@ function doDealerLoop(deck) {
       break;
     }
 
-    if (calcCardTotal(DEALER.cards) >= DEALER_LIMIT_SCORE) {
+    let dealerTotal = calcCardTotal(DEALER.cards);
+
+    if (dealerTotal >= DEALER_LIMIT_SCORE) {
       prompt(`${DEALER.name} wants to stay`);
       break;
-    } else if (calcCardTotal(DEALER.cards) < DEALER_LIMIT_SCORE) {
+    } else if (dealerTotal < DEALER_LIMIT_SCORE) {
       doHit(DEALER, deck);
       prompt(`${DEALER.name} did a hit!`);
       continue;
