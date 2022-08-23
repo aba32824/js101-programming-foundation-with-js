@@ -95,9 +95,7 @@ function calcCardValue(value) {
 
 function getCountForAces(values) {
   let aceCount = values.filter(value => value === 'A');
-  if (aceCount.length) {
-    return aceCount.length - 1;
-  }
+  if (aceCount.length) return aceCount.length - 1;
   return 0;
 }
 
@@ -142,7 +140,15 @@ function displayHandCards(hand, showAllDealerCards = false) {
     }
   }
 
-  prompt(`${hand.name} has: ${values.join(' and ')}`);
+  prompt(`${hand.name} has: [${values.join(' and ')}]`);
+}
+
+function displayInitHandsCards() {
+  [PLAYER, DEALER].forEach(hand => displayHandCards(hand));
+}
+
+function displayFinalHandsCards() {
+  [PLAYER, DEALER].forEach(hand => displayHandCards(hand, true));
 }
 
 function displayTotalScoresForAllPlayers() {
@@ -228,27 +234,15 @@ function doDealerLoop(deck) {
   }
 }
 
-// the main loop
-MAIN: while (true) {
-  let deck = initilizeDeck();
-  dealInitCards(deck);
+function resetHands() {
+  [PLAYER, DEALER].forEach(hand => {
+    hand.cards.length = 0;
+    hand.busted = false;
+  });
+}
 
-  console.log(`> PLAYER - ${JSON.stringify(PLAYER)}`);
-  console.log(`> DEALER - ${JSON.stringify(DEALER)}`);
-
-  [PLAYER, DEALER].forEach(hand => displayHandCards(hand));
-
-  // Player's loop
-  doPlayerLoop(deck);
-
-  // Dealer's loop
-  if (!PLAYER.busted) doDealerLoop(deck);
-
-  let showAllDealerCards = true;
-  [PLAYER, DEALER].forEach(hand => displayHandCards(hand, showAllDealerCards));
-  displayWinner();
-  displayTotalScoresForAllPlayers();
-
+function playAgain() {
+  let flag = false;
   do {
     prompt('Do you want to play again? Answer "y" to continue or "n" to exit');
     let answer = readline.question('> ').toLowerCase();
@@ -257,12 +251,32 @@ MAIN: while (true) {
       continue;
     }
     if (answer === 'y') {
-      [PLAYER, DEALER].forEach(hand => {
-        hand.cards.length = 0;
-        hand.busted = false;
-      });
+      resetHands();
+      flag = true;
       break;
     }
-    if (answer === 'n') break MAIN;
+    if (answer === 'n') break;
   } while (true);
+
+  return flag;
+}
+
+// the main loop
+while (true) {
+  let deck = initilizeDeck();
+  dealInitCards(deck);
+  displayInitHandsCards();
+
+  doPlayerLoop(deck);
+
+  if (!PLAYER.busted) doDealerLoop(deck);
+
+  displayWinner();
+  displayTotalScoresForAllPlayers();
+  displayFinalHandsCards();
+
+  if (!playAgain()) {
+    prompt('Game over. Exiting...');
+    break;
+  }
 }
