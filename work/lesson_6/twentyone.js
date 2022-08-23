@@ -173,14 +173,22 @@ function getHandWithMaxScore() {
   return highScoreHand;
 }
 
+function displayMatchWinner() {
+  let matchWinner = [PLAYER, DEALER].filter(hand => hand.scores >= 5)[0];
+
+  if (matchWinner) {
+    prompt(`"${matchWinner.name}" won 5 consecutive rounds! Match winner!`);
+  }
+}
+
 function displayWinner() {
   let busted = [PLAYER, DEALER].filter(hand => hand.busted)[0];
 
   if (busted) {
-    prompt(`"${busted.name}" busted and loses this round.`);
     let winner = [PLAYER, DEALER].filter(hand => !hand.busted)[0];
     winner.scores += 1;
     prompt(`"${winner.name}" is the winner!`);
+    displayMatchWinner();
     return;
   }
 
@@ -189,23 +197,24 @@ function displayWinner() {
   } else {
     let hand = getHandWithMaxScore();
     hand.scores += 1;
-    prompt(`The winner is "${hand.name}"`);
+    prompt(`"${hand.name}" is the winner!`);
+    displayMatchWinner();
   }
 }
 
 function doesPlayerWantToStay() {
   let answer;
   do {
-    prompt('hit or stay?');
+    prompt('hit or stay? Input "h" to hit or "s" to stay');
     answer = readline.question('> ').toLowerCase();
-    if (answer === 'stay' || answer === 'hit') {
+    if (answer === 's' || answer === 'h') {
       break;
     } else {
-      prompt('Please specify either "hit" or "stay"!');
+      prompt('Please specify either "h" or "s"!');
     }
   } while (true);
 
-  return answer === 'stay';
+  return answer === 's';
 }
 
 function doPlayerLoop(deck) {
@@ -236,7 +245,7 @@ function doDealerLoop(deck) {
   }
 }
 
-function resetHands() {
+function resetHandsCardsAndScores() {
   [PLAYER, DEALER].forEach(hand => {
     hand.cards.length = 0;
     hand.busted = false;
@@ -253,7 +262,7 @@ function playAgain() {
       continue;
     }
     if (answer === 'y') {
-      resetHands();
+      resetHandsCardsAndScores();
       flag = true;
       break;
     }
@@ -265,11 +274,14 @@ function playAgain() {
 
 function displayGameRules() {
   console.log('*'.repeat(70));
+  console.log(' '.repeat(20) + 'Welcome to Twenty-One' + ' '.repeat(20));
+  console.log();
   prompt('The aim is to score exactly twenty-one points or, failing that,');
   prompt('to come as close to twenty-one as possible, based on the card');
   prompt('values dealt. If a player exceeds twenty-one, they lose their');
   prompt('stake. Once every punter has either announced they will stay with');
   prompt('their cards or exceeded twenty-one, the dealer takes his turn.');
+  console.log();
   console.log('*'.repeat(70));
 }
 
