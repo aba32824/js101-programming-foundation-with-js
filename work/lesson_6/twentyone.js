@@ -105,7 +105,6 @@ function calcCardTotal(cards) {
 
   if (total > TOTAL_LIMIT_SCORE) {
     let aceCount = getCountForAces(values);
-    console.log(`==> Player ace count - ${aceCount}`);
     if (aceCount) total -= aceCount * ACE_CARD_REDUCED_VALUE;
   }
 
@@ -151,6 +150,12 @@ function displayFinalHandsCards() {
   [PLAYER, DEALER].forEach(hand => displayHandCards(hand, true));
 }
 
+function displayHandsScores() {
+  [PLAYER, DEALER].forEach(hand => {
+    prompt(`"${hand.name}" won ${hand.scores} round(s).`);
+  });
+}
+
 function displayTotalScoresForAllPlayers() {
   [PLAYER, DEALER].forEach(hand => {
     let cardTotal = calcCardTotal(hand.cards);
@@ -165,7 +170,6 @@ function getHandWithMaxScore() {
     return (totalPrev > totalCurrent) ? prev : current;
   });
 
-  console.log(`>> getting hand with Max Scores: ${JSON.stringify(highScoreHand)}`);
   return highScoreHand;
 }
 
@@ -207,8 +211,6 @@ function doesPlayerWantToStay() {
 function doPlayerLoop(deck) {
   while (true) {
     if (doesPlayerWantToStay()) break;
-
-    console.log("==> Player is in doPlayerLoop func");
 
     doHit(PLAYER, deck);
     displayHandCards(PLAYER);
@@ -261,6 +263,17 @@ function playAgain() {
   return flag;
 }
 
+function displayGameRules() {
+  console.log('*'.repeat(70));
+  prompt('The aim is to score exactly twenty-one points or, failing that,');
+  prompt('to come as close to twenty-one as possible, based on the card');
+  prompt('values dealt. If a player exceeds twenty-one, they lose their');
+  prompt('stake. Once every punter has either announced they will stay with');
+  prompt('their cards or exceeded twenty-one, the dealer takes his turn.');
+  console.log('*'.repeat(70));
+}
+
+displayGameRules();
 // the main loop
 while (true) {
   let deck = initilizeDeck();
@@ -276,7 +289,9 @@ while (true) {
   displayFinalHandsCards();
 
   if (!playAgain()) {
+    displayHandsScores();
     prompt('Game over. Exiting...');
     break;
   }
+  console.clear();
 }
