@@ -11,12 +11,12 @@ function isNumber(char) {
 }
 
 function isLetter(char) {
-  return char >= 'a' && char <= 'z';
+  let lowerChar = char.toLowerCase();
+  return lowerChar >= 'a' && lowerChar <= 'z';
 }
 
 function isRealPalindrome(text) {
   let cleanText = text
-    .toLowerCase()
     .split('')
     .filter(char => isLetter(char) || isNumber(char))
     .join('');
